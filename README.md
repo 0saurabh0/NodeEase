@@ -1,1 +1,1 @@
-# NodeEase -- <WIP>
+# NodeEase -- (Work in Progress)
