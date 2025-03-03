@@ -1,22 +1,48 @@
 import { Github } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 
 export default function OnboardingModal({ onClose }: { onClose: () => void }) {
   const [authError, setAuthError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   // Function to handle Google login success
-  const handleGoogleSuccess = (credentialResponse: any) => {
+  const handleGoogleSuccess = async (credentialResponse: any) => {
     console.log('Google login successful:', credentialResponse);
-    // Here you would typically:
-    // 1. Send the token to your backend
-    // 2. Authenticate the user
-    // 3. Redirect or update UI accordingly
+    
+    try {
+      // here still need to send the token to the backend
+      // something like this:
+      // const response = await fetch('/api/auth/google', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ token: credentialResponse.credential })
+      // });
+      // const data = await response.json();
+      
+      // For now, simulating a successful authentication
+      // In a real app, we'll be verifying the token on your backend first
+      
+      // 1. Store user info or token in localStorage/sessionStorage
+      localStorage.setItem('isAuthenticated', 'true');
+      
+      onClose();
+      
+      // 3. Redirect to dashboard
+      navigate('/dashboard');
+      
+    } catch (error) {
+      console.error('Authentication error:', error);
+      setAuthError('Failed to authenticate with Google. Please try again.');
+    }
   };
 
   // Function to handle Google login error
   const handleGoogleError = () => {
     console.error('Google login failed');
+    setAuthError('Google login failed. Please try again.');
   };
 
   return (
