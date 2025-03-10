@@ -1,12 +1,21 @@
 import { Github } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 
 export default function OnboardingModal({ onClose }: { onClose: () => void }) {
   const [authError, setAuthError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Function to handle background click
+  const handleBackgroundClick = (e: React.MouseEvent) => {
+    // Only close if the click is on the background (not the modal content)
+    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+      onClose();
+    }
+  };
 
   // Function to handle Google login success
   const handleGoogleSuccess = async (credentialResponse: any) => {
@@ -46,8 +55,8 @@ export default function OnboardingModal({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-50 backdrop-blur-md">
-      <div className="bg-white/90 backdrop-blur-xl rounded-[2.5rem] p-12 max-w-md w-full relative border border-white/20">
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-50 backdrop-blur-md" onClick={handleBackgroundClick}>
+      <div ref={modalRef} className="bg-white/90 backdrop-blur-xl rounded-[2.5rem] p-12 max-w-md w-full relative border border-white/20">
         <button 
           onClick={onClose}
           className="absolute top-8 right-8 text-gray-400 hover:text-gray-600 transition-colors"
@@ -69,30 +78,21 @@ export default function OnboardingModal({ onClose }: { onClose: () => void }) {
           </div>
           
           {/* Google login with consistent styling */}
-          <div className="w-full">
-            <div className="google-login-container" style={{ height: '50px' }}>
+          <div className="w-full relative">
+            <div className="google-login-container">
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
                 onError={handleGoogleError}
-                theme="outline"
-                size="large"
-                text="continue_with"
+                theme="filled_blue"
                 shape="rectangular"
-                width="100%"
-                logo_alignment="center"
+                size='large'
               />
             </div>
             <style>{`
               .google-login-container {
                 display: flex;
                 justify-content: center;
-              }
-              .google-login-container > div {
-                width: 100% !important;
-              }
-              .google-login-container iframe {
-                scale: 1.15;
-                transform-origin: center;
+                width: 100%;
               }
             `}</style>
           </div>
