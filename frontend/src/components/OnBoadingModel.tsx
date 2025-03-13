@@ -2,7 +2,7 @@ import { Github } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import axios from 'axios';
 
 export default function OnboardingModal({ onClose }: { onClose: () => void }) {
   const [authError, setAuthError] = useState<string | null>(null);
@@ -22,24 +22,17 @@ export default function OnboardingModal({ onClose }: { onClose: () => void }) {
     console.log('Google login successful:', credentialResponse);
     
     try {
-      // here still need to send the token to the backend
-      // something like this:
-      // const response = await fetch('/api/auth/google', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ token: credentialResponse.credential })
-      // });
-      // const data = await response.json();
-      
-      // For now, simulating a successful authentication
-      // In a real app, we'll be verifying the token on your backend first
-      
-      // 1. Store user info or token in localStorage/sessionStorage
-      localStorage.setItem('isAuthenticated', 'true');
+      const token = credentialResponse.credential;
+
+      // Send token to backend
+      const res = await axios.post("http://localhost:8080/api/auth/google", {
+        token,
+      });
+      localStorage.setItem("jwtToken", res.data.token);
       
       onClose();
       
-      // 3. Redirect to dashboard
+      // Redirect to dashboard
       navigate('/dashboard');
       
     } catch (error) {
