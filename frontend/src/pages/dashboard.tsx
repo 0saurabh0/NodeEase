@@ -1,10 +1,43 @@
 // src/pages/Dashboard.tsx
-import React, { useState } from 'react';
-import { Terminal, Server, Settings, Activity, Database, PlugZap, Bell } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Terminal, Server, Settings, Activity, Database, PlugZap, Bell, LogOut } from 'lucide-react';
 import IntegrateView from '../components/dashboard/Integrate';
+import { useNavigate } from 'react-router-dom';
 
 const DashboardLayout = () => {
   const [activeView, setActiveView] = useState('integrate');
+  const [userProfile, setUserProfile] = useState({
+    name: '',
+    email: '',
+    picture: ''
+  });
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check for JWT token first
+    const token = localStorage.getItem('jwtToken');
+    
+    if (token) {
+      // Try to get profile from localStorage
+      const storedProfile = localStorage.getItem('userProfile');
+      
+      if (storedProfile) {
+        try {
+          setUserProfile(JSON.parse(storedProfile));
+        } catch (error) {
+          console.error('Error parsing stored profile:', error);
+        }
+      }
+    } else {
+      // Redirect to login if no token is found
+      navigate('/');
+    }
+  }, [navigate]);
+
+  const handleSignOut = () => {
+    localStorage.removeItem('jwtToken');
+    navigate('/');
+  };
 
   const renderContent = () => {
     switch (activeView) {
@@ -108,7 +141,33 @@ const DashboardLayout = () => {
             <button className="p-2 text-gray-400 hover:text-white transition-colors">
               <Bell className="w-5 h-5" />
             </button>
-            <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600" />
+            {userProfile.picture ? (
+              <div className="relative group">
+                <img 
+                  src={userProfile.picture} 
+                  alt="Profile" 
+                  className="h-8 w-8 rounded-full object-cover cursor-pointer ring-2 ring-blue-500/50"
+                />
+                <div className="absolute right-0 mt-2 w-48 bg-[#111827]/95 backdrop-blur-xl rounded-xl shadow-lg border border-[#1E2D4A] 
+                    opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                  <div className="p-3 border-b border-[#1E2D4A]">
+                    <p className="text-white font-medium truncate">{userProfile.name}</p>
+                    <p className="text-gray-400 text-sm truncate">{userProfile.email}</p>
+                  </div>
+                  <div className="p-2">
+                    <button 
+                      onClick={handleSignOut}
+                      className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign out
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600" />
+            )}
           </div>
         </header>
         {renderContent()}

@@ -19,10 +19,19 @@ export default function OnboardingModal({ onClose }: { onClose: () => void }) {
 
   // Function to handle Google login success
   const handleGoogleSuccess = async (credentialResponse: any) => {
-    console.log('Google login successful:', credentialResponse);
+    // console.log('Google login successful:', credentialResponse);
     
     try {
       const token = credentialResponse.credential;
+
+      const googlePayload = JSON.parse(atob(token.split('.')[1]));
+
+      localStorage.setItem("userProfile", JSON.stringify({
+        name: googlePayload.name,
+        email: googlePayload.email,
+        picture: googlePayload.picture
+      }));
+
 
       // Send token to backend
       const res = await axios.post("http://localhost:8080/api/auth/google", {
