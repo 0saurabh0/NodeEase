@@ -9,7 +9,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var JwtKey = os.Getenv("JWT_SECRET")
+var JwtKey = []byte(os.Getenv("JWT_SECRET"))
 
 // the structure of the JWT claims
 type Claims struct {
