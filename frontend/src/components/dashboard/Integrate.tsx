@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import AWSIntegrationModal from './awsIntegrationModel';
+
 const CLOUD_PROVIDERS = [
   {
     name: 'AWS',
@@ -20,6 +23,19 @@ const CLOUD_PROVIDERS = [
 ];
 
 const IntegrateView = () => {
+  const [isAWSModalOpen, setIsAWSModalOpen] = useState(false);
+  const [awsConnected, setAwsConnected] = useState(false);
+  
+  const handleConnectAWS = () => {
+    setIsAWSModalOpen(true);
+  };
+  
+  const handleAWSSuccess = () => {
+    setIsAWSModalOpen(false);
+    setAwsConnected(true);
+    // You might want to update the state or fetch the updated integration status
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between mb-12">
@@ -56,11 +72,15 @@ const IntegrateView = () => {
                     px-4 py-1.5 rounded-full text-sm font-medium
                     transition-colors duration-300
                     ${provider.status === 'available' 
-                      ? 'bg-green-500/10 text-green-400 group-hover:bg-green-500/15' 
+                      ? (provider.name === 'AWS' && awsConnected 
+                         ? 'bg-blue-500/10 text-blue-400' 
+                         : 'bg-green-500/10 text-green-400 group-hover:bg-green-500/15') 
                       : 'bg-gray-500/10 text-gray-400'}
                   `}
                 >
-                  {provider.status === 'available' ? 'Available' : 'Coming Soon'}
+                  {provider.status === 'available'
+                    ? (provider.name === 'AWS' && awsConnected ? 'Connected' : 'Available')
+                    : 'Coming Soon'}
                 </span>
               </div>
               
@@ -77,13 +97,23 @@ const IntegrateView = () => {
                     : 'bg-[#1E2D4A]/50 text-gray-400 cursor-not-allowed'}
                 `}
                 disabled={provider.status === 'coming-soon'}
+                onClick={provider.name === 'AWS' ? handleConnectAWS : undefined}
               >
-                Connect {provider.name}
+                {provider.name === 'AWS' && awsConnected 
+                  ? 'Manage Connection' 
+                  : `Connect ${provider.name}`}
               </button>
             </div>
           </div>
         ))}
       </div>
+
+      {/* AWS Integration Modal */}
+      <AWSIntegrationModal 
+        isOpen={isAWSModalOpen} 
+        onClose={() => setIsAWSModalOpen(false)}
+        onSuccess={handleAWSSuccess}
+      />
     </div>
   );
 };
