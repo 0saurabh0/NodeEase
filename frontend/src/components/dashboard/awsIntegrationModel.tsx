@@ -32,7 +32,7 @@ const AWSIntegrationModal: React.FC<AWSIntegrationModalProps> = ({ isOpen, onClo
     
     try {
       // Replace with your actual API endpoint
-      const response = await fetch('/api/aws/test-connection', {
+      const response = await fetch('http://localhost:8080/api/aws/test-connection', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,7 +64,7 @@ const AWSIntegrationModal: React.FC<AWSIntegrationModalProps> = ({ isOpen, onClo
     
     try {
       // Replace with your actual API endpoint
-      const response = await fetch('/api/aws/integrate', {
+      const response = await fetch('http://localhost:8080/api/aws/integrate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

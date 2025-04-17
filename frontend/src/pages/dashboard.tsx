@@ -1,6 +1,6 @@
 // src/pages/Dashboard.tsx
 import React, { useState, useEffect } from 'react';
-import { Terminal, Server, Settings, Activity, Database, PlugZap, Bell, LogOut } from 'lucide-react';
+import { Terminal, Server, Settings, Activity, Database, PlugZap, Bell, LogOut, User } from 'lucide-react';
 import IntegrateView from '../components/dashboard/Integrate';
 import { useNavigate } from 'react-router-dom';
 
@@ -23,7 +23,8 @@ const DashboardLayout = () => {
       
       if (storedProfile) {
         try {
-          setUserProfile(JSON.parse(storedProfile));
+          const parsedProfile = JSON.parse(storedProfile);
+          setUserProfile(parsedProfile);
         } catch (error) {
           console.error('Error parsing stored profile:', error);
         }
@@ -141,12 +142,19 @@ const DashboardLayout = () => {
             <button className="p-2 text-gray-400 hover:text-white transition-colors">
               <Bell className="w-5 h-5" />
             </button>
-            {userProfile.picture ? (
+            {userProfile && userProfile.picture ? (
               <div className="relative group">
                 <img 
                   src={userProfile.picture} 
                   alt="Profile" 
                   className="h-8 w-8 rounded-full object-cover cursor-pointer ring-2 ring-blue-500/50"
+                  onError={(e) => {
+                    console.error('Error loading profile image');
+                    // Fallback to default avatar
+                    e.currentTarget.onerror = null; // Prevent infinite loop
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center', 'bg-gradient-to-r', 'from-blue-500', 'to-indigo-600');
+                  }}
                 />
                 <div className="absolute right-0 mt-2 w-48 bg-[#111827]/95 backdrop-blur-xl rounded-xl shadow-lg border border-[#1E2D4A] 
                     opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
@@ -166,7 +174,9 @@ const DashboardLayout = () => {
                 </div>
               </div>
             ) : (
-              <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600" />
+              <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center">
+                <User className="w-4 h-4 text-white" />
+              </div>
             )}
           </div>
         </header>
