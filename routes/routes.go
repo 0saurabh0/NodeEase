@@ -19,7 +19,11 @@ func SetupRouter() *mux.Router {
 	// Protected routes (Require JWT authentication)
 	protected := router.PathPrefix("/api").Subrouter()
 	protected.Use(middleware.AuthMiddleware)
-	// protected.HandleFunc("/api/nodes/provision", handlers.ProvisionNode).Methods("POST")
+
+	// AWS Integration routes
+	protected.HandleFunc("/aws/test-connection", handlers.TestAWSConnectionHandler).Methods("POST")
+	protected.HandleFunc("/aws/integrate", handlers.IntegrateAWSHandler).Methods("POST")
+	protected.HandleFunc("/aws/status", handlers.AWSStatusHandler).Methods("GET")
 
 	return router
 }
