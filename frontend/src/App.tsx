@@ -2,9 +2,44 @@ import React, { useState } from 'react';
 import { Terminal, Server, Globe, Github, Code, Zap, Lock, Clock } from 'lucide-react';
 import OnboardingModal from './components/OnBoadingModel';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function App() {
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(false);
+  const navigate = useNavigate();
+
+  const handleStartClick = async () => {
+    setIsCheckingAuth(true);
+    
+    const token = localStorage.getItem('jwtToken');
+    
+    if (!token) {
+      // No token found, show onboarding modal
+      setShowOnboarding(true);
+      setIsCheckingAuth(false);
+      return;
+    }
+    
+    try {
+      // Verify if the token is valid
+      await axios.get('http://localhost:8080/api/auth/verify', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      // Token is valid, redirect to dashboard
+      navigate('/dashboard');
+    } catch {
+      // Token is invalid, show onboarding modal
+      localStorage.removeItem('jwtToken'); // Clear invalid token
+      setShowOnboarding(true);
+    } finally {
+      setIsCheckingAuth(false);
+    }
+  };
 
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
@@ -32,11 +67,21 @@ function App() {
                   <Github className="w-6 h-6" />
                 </a>
                 <button 
-                  onClick={() => setShowOnboarding(true)}
+                  onClick={handleStartClick}
+                  disabled={isCheckingAuth}
                   className="group bg-black/10 backdrop-blur-xl text-white px-8 py-3 rounded-2xl font-medium hover:scale-105 transition-all duration-300"
                 >
-                  Get Started
-                  <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>
+                  {isCheckingAuth ? (
+                    <span className="inline-flex items-center">
+                      <span className="w-4 h-4 mr-2 border-2 border-t-transparent border-white rounded-full animate-spin"></span>
+                      Loading...
+                    </span>
+                  ) : (
+                    <>
+                      Get Started
+                      <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -62,11 +107,21 @@ function App() {
                 NodeEase simplifies blockchain infrastructure deployment. Set up your Solana RPC node on any cloud provider in minutes, not days.
               </p>
               <button 
-                onClick={() => setShowOnboarding(true)}
+                onClick={handleStartClick}
+                disabled={isCheckingAuth}
                 className="group inline-flex items-center bg-black/10 backdrop-blur-xl text-white px-10 py-5 rounded-2xl text-lg font-medium hover:scale-105 transition-all duration-300"
               >
-                Deploy Now
-                <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>
+                {isCheckingAuth ? (
+                  <span className="inline-flex items-center">
+                    <span className="w-4 h-4 mr-2 border-2 border-t-transparent border-white rounded-full animate-spin"></span>
+                    Loading...
+                  </span>
+                ) : (
+                  <>
+                    Deploy Now
+                    <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>
+                  </>
+                )}
               </button>
 
               {/* Cloud Providers Section */}

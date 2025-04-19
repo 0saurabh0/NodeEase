@@ -104,7 +104,7 @@ const AWSIntegrationModal: React.FC<AWSIntegrationModalProps> = ({ isOpen, onClo
 
         <form onSubmit={handleSubmit} className="p-6">
           <div className="mb-6">
-            <label className="block text-gray-300 mb-4">Integration Method</label>
+            <label className="block text-gray-300 mb-2">Integration Method</label>
             <div className="flex gap-4">
               <button
                 type="button"
@@ -115,7 +115,7 @@ const AWSIntegrationModal: React.FC<AWSIntegrationModalProps> = ({ isOpen, onClo
                     : 'border-[#1E2D4A] text-gray-400 hover:text-white hover:border-gray-500'
                 }`}
               >
-                Access Keys
+                Direct Access Keys
               </button>
               <button
                 type="button"
@@ -126,9 +126,14 @@ const AWSIntegrationModal: React.FC<AWSIntegrationModalProps> = ({ isOpen, onClo
                     : 'border-[#1E2D4A] text-gray-400 hover:text-white hover:border-gray-500'
                 }`}
               >
-                IAM Role
+                Assume IAM Role
               </button>
             </div>
+            <p className="text-xs text-gray-400 mt-2">
+              {integrationMethod === 'roleArn' 
+                ? 'Base credentials are required to authenticate before assuming the role.'
+                : 'Using direct access keys for all operations.'}
+            </p>
           </div>
 
           <div className="space-y-4">
@@ -154,41 +159,42 @@ const AWSIntegrationModal: React.FC<AWSIntegrationModalProps> = ({ isOpen, onClo
                 <option value="ap-southeast-2">Asia Pacific (Sydney)</option>
               </select>
             </div>
-
-            {integrationMethod === 'accessKey' ? (
-              <>
-                <div className="mb-4">
-                  <label htmlFor="accessKeyId" className="block text-gray-300 mb-2">
-                    Access Key ID
-                  </label>
-                  <input
-                    id="accessKeyId"
-                    name="accessKeyId"
-                    type="text"
-                    value={formData.accessKeyId}
-                    onChange={handleInputChange}
-                    placeholder="AKIAIOSFODNN7EXAMPLE"
-                    className="w-full bg-[#151C2C] border border-[#1E2D4A] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500"
-                    required={integrationMethod === 'accessKey'}
-                  />
-                </div>
-                <div className="mb-4">
-                  <label htmlFor="secretAccessKey" className="block text-gray-300 mb-2">
-                    Secret Access Key
-                  </label>
-                  <input
-                    id="secretAccessKey"
-                    name="secretAccessKey"
-                    type="password"
-                    value={formData.secretAccessKey}
-                    onChange={handleInputChange}
-                    placeholder="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-                    className="w-full bg-[#151C2C] border border-[#1E2D4A] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500"
-                    required={integrationMethod === 'accessKey'}
-                  />
-                </div>
-              </>
-            ) : (
+            
+            {/* Always show access key fields */}
+            <div className="mb-4">
+              <label htmlFor="accessKeyId" className="block text-gray-300 mb-2">
+                Access Key ID
+              </label>
+              <input
+                id="accessKeyId"
+                name="accessKeyId"
+                type="text"
+                value={formData.accessKeyId}
+                onChange={handleInputChange}
+                placeholder="AKIAIOSFODNN7EXAMPLE"
+                className="w-full bg-[#151C2C] border border-[#1E2D4A] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500"
+                required
+              />
+            </div>
+            
+            <div className="mb-4">
+              <label htmlFor="secretAccessKey" className="block text-gray-300 mb-2">
+                Secret Access Key
+              </label>
+              <input
+                id="secretAccessKey"
+                name="secretAccessKey"
+                type="password"
+                value={formData.secretAccessKey}
+                onChange={handleInputChange}
+                placeholder="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+                className="w-full bg-[#151C2C] border border-[#1E2D4A] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500"
+                required
+              />
+            </div>
+            
+            {/* Only conditionally show the role ARN field */}
+            {integrationMethod === 'roleArn' && (
               <div className="mb-4">
                 <label htmlFor="roleArn" className="block text-gray-300 mb-2">
                   IAM Role ARN
@@ -201,7 +207,7 @@ const AWSIntegrationModal: React.FC<AWSIntegrationModalProps> = ({ isOpen, onClo
                   onChange={handleInputChange}
                   placeholder="arn:aws:iam::123456789012:role/NodeEaseRole"
                   className="w-full bg-[#151C2C] border border-[#1E2D4A] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500"
-                  required={integrationMethod === 'roleArn'}
+                  required
                 />
               </div>
             )}

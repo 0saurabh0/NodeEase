@@ -150,10 +150,18 @@ const DashboardLayout = () => {
                   className="h-8 w-8 rounded-full object-cover cursor-pointer ring-2 ring-blue-500/50"
                   onError={(e) => {
                     console.error('Error loading profile image');
-                    // Fallback to default avatar
-                    e.currentTarget.onerror = null; // Prevent infinite loop
-                    e.currentTarget.style.display = 'none';
-                    e.currentTarget.parentElement?.classList.add('flex', 'items-center', 'justify-center', 'bg-gradient-to-r', 'from-blue-500', 'to-indigo-600');
+                    // Get reference to the parent element
+                    const parent = e.currentTarget.parentElement;
+                    if (parent) {
+                      // Remove the img element
+                      e.currentTarget.remove();
+                      // Add classes to parent for styling
+                      parent.classList.add('flex', 'items-center', 'justify-center', 'bg-gradient-to-r', 'from-blue-500', 'to-indigo-600');
+                      // Create and append the User icon
+                      const userIcon = document.createElement('div');
+                      userIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-white"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
+                      parent.appendChild(userIcon);
+                    }
                   }}
                 />
                 <div className="absolute right-0 mt-2 w-48 bg-[#111827]/95 backdrop-blur-xl rounded-xl shadow-lg border border-[#1E2D4A] 
