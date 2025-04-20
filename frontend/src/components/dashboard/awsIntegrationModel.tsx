@@ -8,11 +8,9 @@ interface AWSIntegrationModalProps {
 }
 
 const AWSIntegrationModal: React.FC<AWSIntegrationModalProps> = ({ isOpen, onClose, onSuccess }) => {
-  const [integrationMethod, setIntegrationMethod] = useState<'accessKey' | 'roleArn'>('accessKey');
   const [formData, setFormData] = useState({
     accessKeyId: '',
     secretAccessKey: '',
-    roleArn: '',
     region: 'us-east-1',
   });
   const [loading, setLoading] = useState(false);
@@ -39,7 +37,7 @@ const AWSIntegrationModal: React.FC<AWSIntegrationModalProps> = ({ isOpen, onClo
           'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
         },
         body: JSON.stringify({
-          integrationType: integrationMethod,
+          integrationType: 'accessKey',
           ...formData
         })
       });
@@ -71,7 +69,7 @@ const AWSIntegrationModal: React.FC<AWSIntegrationModalProps> = ({ isOpen, onClo
           'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
         },
         body: JSON.stringify({
-          integrationType: integrationMethod,
+          integrationType: 'accessKey',
           ...formData
         })
       });
@@ -103,39 +101,6 @@ const AWSIntegrationModal: React.FC<AWSIntegrationModalProps> = ({ isOpen, onClo
         </div>
 
         <form onSubmit={handleSubmit} className="p-6">
-          <div className="mb-6">
-            <label className="block text-gray-300 mb-2">Integration Method</label>
-            <div className="flex gap-4">
-              <button
-                type="button"
-                onClick={() => setIntegrationMethod('accessKey')}
-                className={`flex-1 py-3 px-4 rounded-xl border ${
-                  integrationMethod === 'accessKey'
-                    ? 'border-blue-500 bg-blue-500/10 text-white'
-                    : 'border-[#1E2D4A] text-gray-400 hover:text-white hover:border-gray-500'
-                }`}
-              >
-                Direct Access Keys
-              </button>
-              <button
-                type="button"
-                onClick={() => setIntegrationMethod('roleArn')}
-                className={`flex-1 py-3 px-4 rounded-xl border ${
-                  integrationMethod === 'roleArn'
-                    ? 'border-blue-500 bg-blue-500/10 text-white'
-                    : 'border-[#1E2D4A] text-gray-400 hover:text-white hover:border-gray-500'
-                }`}
-              >
-                Assume IAM Role
-              </button>
-            </div>
-            <p className="text-xs text-gray-400 mt-2">
-              {integrationMethod === 'roleArn' 
-                ? 'Base credentials are required to authenticate before assuming the role.'
-                : 'Using direct access keys for all operations.'}
-            </p>
-          </div>
-
           <div className="space-y-4">
             <div className="mb-4">
               <label htmlFor="region" className="block text-gray-300 mb-2">
@@ -160,7 +125,6 @@ const AWSIntegrationModal: React.FC<AWSIntegrationModalProps> = ({ isOpen, onClo
               </select>
             </div>
             
-            {/* Always show access key fields */}
             <div className="mb-4">
               <label htmlFor="accessKeyId" className="block text-gray-300 mb-2">
                 Access Key ID
@@ -192,25 +156,6 @@ const AWSIntegrationModal: React.FC<AWSIntegrationModalProps> = ({ isOpen, onClo
                 required
               />
             </div>
-            
-            {/* Only conditionally show the role ARN field */}
-            {integrationMethod === 'roleArn' && (
-              <div className="mb-4">
-                <label htmlFor="roleArn" className="block text-gray-300 mb-2">
-                  IAM Role ARN
-                </label>
-                <input
-                  id="roleArn"
-                  name="roleArn"
-                  type="text"
-                  value={formData.roleArn}
-                  onChange={handleInputChange}
-                  placeholder="arn:aws:iam::123456789012:role/NodeEaseRole"
-                  className="w-full bg-[#151C2C] border border-[#1E2D4A] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500"
-                  required
-                />
-              </div>
-            )}
           </div>
 
           {error && (
@@ -259,16 +204,6 @@ const AWSIntegrationModal: React.FC<AWSIntegrationModalProps> = ({ isOpen, onClo
             </button>
           </div>
         </form>
-
-        <div className="p-4 border-t border-[#1E2D4A] bg-[#0D1320] rounded-b-2xl">
-          <p className="text-gray-400 text-sm flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-blue-400" />
-            <span>
-              AWS credentials are encrypted and stored securely. NodeEase requires permissions to manage EC2 instances
-              and related resources. We recommend using IAM roles with limited permissions.
-            </span>
-          </p>
-        </div>
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ const DashboardLayout = () => {
     email: '',
     picture: ''
   });
+  const [profileImageError, setProfileImageError] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,6 +28,7 @@ const DashboardLayout = () => {
           setUserProfile(parsedProfile);
         } catch (error) {
           console.error('Error parsing stored profile:', error);
+          setProfileImageError(true);
         }
       }
     } else {
@@ -142,50 +144,36 @@ const DashboardLayout = () => {
             <button className="p-2 text-gray-400 hover:text-white transition-colors">
               <Bell className="w-5 h-5" />
             </button>
-            {userProfile && userProfile.picture ? (
-              <div className="relative group">
+            <div className="relative group">
+              {userProfile.picture && !profileImageError ? (
                 <img 
                   src={userProfile.picture} 
                   alt="Profile" 
                   className="h-8 w-8 rounded-full object-cover cursor-pointer ring-2 ring-blue-500/50"
-                  onError={(e) => {
-                    console.error('Error loading profile image');
-                    // Get reference to the parent element
-                    const parent = e.currentTarget.parentElement;
-                    if (parent) {
-                      // Remove the img element
-                      e.currentTarget.remove();
-                      // Add classes to parent for styling
-                      parent.classList.add('flex', 'items-center', 'justify-center', 'bg-gradient-to-r', 'from-blue-500', 'to-indigo-600');
-                      // Create and append the User icon
-                      const userIcon = document.createElement('div');
-                      userIcon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-white"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
-                      parent.appendChild(userIcon);
-                    }
-                  }}
+                  onError={() => setProfileImageError(true)}
                 />
-                <div className="absolute right-0 mt-2 w-48 bg-[#111827]/95 backdrop-blur-xl rounded-xl shadow-lg border border-[#1E2D4A] 
-                    opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
-                  <div className="p-3 border-b border-[#1E2D4A]">
-                    <p className="text-white font-medium truncate">{userProfile.name}</p>
-                    <p className="text-gray-400 text-sm truncate">{userProfile.email}</p>
-                  </div>
-                  <div className="p-2">
-                    <button 
-                      onClick={handleSignOut}
-                      className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Sign out
-                    </button>
-                  </div>
+              ) : (
+                <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center">
+                  <User className="w-4 h-4 text-white" />
+                </div>
+              )}
+              <div className="absolute right-0 mt-2 w-48 bg-[#111827]/95 backdrop-blur-xl rounded-xl shadow-lg border border-[#1E2D4A] 
+                  opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                <div className="p-3 border-b border-[#1E2D4A]">
+                  <p className="text-white font-medium truncate">{userProfile.name || 'User'}</p>
+                  <p className="text-gray-400 text-sm truncate">{userProfile.email || 'No email'}</p>
+                </div>
+                <div className="p-2">
+                  <button 
+                    onClick={handleSignOut}
+                    className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign out
+                  </button>
                 </div>
               </div>
-            ) : (
-              <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center">
-                <User className="w-4 h-4 text-white" />
-              </div>
-            )}
+            </div>
           </div>
         </header>
         {renderContent()}
