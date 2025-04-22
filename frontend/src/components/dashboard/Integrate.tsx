@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import AWSIntegrationModal from './awsIntegrationModel';
 
 const CLOUD_PROVIDERS = [
@@ -8,33 +9,61 @@ const CLOUD_PROVIDERS = [
     status: 'available',
     imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg', 
   },
-  {
-    name: 'Google Cloud',
-    description: 'Deploy nodes using Google Cloud Platform\'s robust infrastructure.',
-    status: 'coming-soon',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/51/Google_Cloud_logo.svg',
-  },
-  {
-    name: 'Azure',
-    description: 'Launch nodes on Microsoft Azure\'s enterprise-grade cloud platform.',
-    status: 'coming-soon',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/a8/Microsoft_Azure_Logo.svg',
-  },
 ];
 
 const IntegrateView = () => {
   const [isAWSModalOpen, setIsAWSModalOpen] = useState(false);
   const [awsConnected, setAwsConnected] = useState(false);
+  const [modalMode, setModalMode] = useState<'connect' | 'manage'>('connect');
+  const [awsConfig, setAwsConfig] = useState<{region: string, accessKeyId: string} | null>(null);
   
   const handleConnectAWS = () => {
+    setModalMode('connect');
+    setIsAWSModalOpen(true);
+  };
+  
+  const handleManageAWS = () => {
+    setModalMode('manage');
     setIsAWSModalOpen(true);
   };
   
   const handleAWSSuccess = () => {
     setIsAWSModalOpen(false);
     setAwsConnected(true);
-    // You might want to update the state or fetch the updated integration status
+    fetchAWSDetails();
   };
+
+  const handleAWSDisconnect = () => {
+    setAwsConnected(false);
+    setAwsConfig(null);
+  };
+
+  const fetchAWSDetails = async () => {
+    try {
+      const token = localStorage.getItem('jwtToken');
+      if (!token) return;
+      
+      const response = await axios.get('http://localhost:8080/api/aws/status', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      if (response.data && response.data.integrated) {
+        setAwsConnected(true);
+        setAwsConfig({
+          region: response.data.region,
+          accessKeyId: response.data.accessKeyId || '***********' // You might need to add this to your API response
+        });
+      }
+    } catch (error) {
+      console.error('Error checking AWS status:', error);
+    }
+  };
+  
+  useEffect(() => {
+    fetchAWSDetails();
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -97,7 +126,10 @@ const IntegrateView = () => {
                     : 'bg-[#1E2D4A]/50 text-gray-400 cursor-not-allowed'}
                 `}
                 disabled={provider.status === 'coming-soon'}
-                onClick={provider.name === 'AWS' ? handleConnectAWS : undefined}
+                onClick={provider.name === 'AWS' ? 
+                  (awsConnected ? handleManageAWS : handleConnectAWS) : 
+                  undefined
+                }
               >
                 {provider.name === 'AWS' && awsConnected 
                   ? 'Manage Connection' 
@@ -113,6 +145,9 @@ const IntegrateView = () => {
         isOpen={isAWSModalOpen} 
         onClose={() => setIsAWSModalOpen(false)}
         onSuccess={handleAWSSuccess}
+        mode={modalMode}
+        existingConfig={awsConfig || undefined}
+        onDisconnect={handleAWSDisconnect}
       />
     </div>
   );

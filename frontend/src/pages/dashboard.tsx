@@ -39,6 +39,10 @@ const DashboardLayout = () => {
 
   const handleSignOut = () => {
     localStorage.removeItem('jwtToken');
+    localStorage.removeItem('userProfile');
+    setUserProfile({ name: '', email: '', picture: '' });
+    setProfileImageError(false);
+    // Redirect to login page
     navigate('/');
   };
 

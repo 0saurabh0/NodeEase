@@ -1,12 +1,21 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
 	"github.com/0saurabh0/NodeEase/utils"
 
 	"github.com/golang-jwt/jwt/v5"
+)
+
+// ContextKey is a type for context keys
+type ContextKey string
+
+const (
+	// UserIDKey is the key used to store user ID in context
+	UserIDKey ContextKey = "userID"
 )
 
 func AuthMiddleware(next http.Handler) http.Handler {
@@ -29,6 +38,15 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		next.ServeHTTP(w, r)
+		// Extract email from claims and use it as user ID
+		email, ok := (*claims)["email"].(string)
+		if !ok {
+			http.Error(w, "Unauthorized: Invalid token claims", http.StatusUnauthorized)
+			return
+		}
+
+		// Create new context with user ID
+		ctx := context.WithValue(r.Context(), UserIDKey, email)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

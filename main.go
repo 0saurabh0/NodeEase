@@ -5,15 +5,20 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/0saurabh0/NodeEase/db"
+	"github.com/0saurabh0/NodeEase/routes"
 	"github.com/joho/godotenv"
 	"github.com/rs/cors"
-
-	"github.com/0saurabh0/NodeEase/routes"
 )
 
 func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Printf("Warning: Error loading .env file: %v", err)
+	}
+
+	// Initialize database
+	if err := db.InitDB(); err != nil {
+		log.Fatalf("Failed to initialize database: %v", err)
 	}
 
 	router := routes.SetupRouter()
