@@ -43,7 +43,6 @@ const AWSIntegrationModal: React.FC<AWSIntegrationModalProps> = ({
     setError(null);
     
     try {
-      // Replace with your actual API endpoint
       const response = await fetch('http://localhost:8080/api/aws/test-connection', {
         method: 'POST',
         headers: {
@@ -75,7 +74,6 @@ const AWSIntegrationModal: React.FC<AWSIntegrationModalProps> = ({
     setError(null);
     
     try {
-      // Replace with your actual API endpoint
       const response = await fetch('http://localhost:8080/api/aws/integrate', {
         method: 'POST',
         headers: {

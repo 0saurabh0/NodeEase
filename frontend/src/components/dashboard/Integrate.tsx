@@ -53,7 +53,7 @@ const IntegrateView = () => {
         setAwsConnected(true);
         setAwsConfig({
           region: response.data.region,
-          accessKeyId: response.data.accessKeyId || '***********' // You might need to add this to your API response
+          accessKeyId: response.data.accessKeyId || '***********'
         });
       }
     } catch (error) {

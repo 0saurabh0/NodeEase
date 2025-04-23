@@ -89,22 +89,24 @@ function App() {
 
           <main className="container mx-auto px-8 pt-20 pb-32">
             <div className="max-w-4xl mx-auto text-center">
-              {/* Solana Integration Banner */}
-              <div className="mb-12 inline-flex items-center gap-3 bg-white/10 backdrop-blur-lg rounded-full px-6 py-3">
-                <img 
-                  src="https://solana.com/src/img/branding/solanaLogoMark.svg"
-                  alt="Solana"
-                  className="h-6 w-6"
-                />
-                <span className="text-white font-medium">Powered by Solana</span>
+              {/* Solana Integration Banner - Enhanced styling */}
+              <div className="mb-12 inline-flex items-center gap-3 bg-gradient-to-r from-[#9945FF]/30 to-[#14F195]/30 backdrop-blur-lg rounded-full px-6 py-3 border border-white/20 shadow-lg animate-pulse hover:animate-none hover:from-[#9945FF]/40 hover:to-[#14F195]/40 transition-all duration-300 cursor-pointer">
+                <div className="bg-white/20 p-1.5 rounded-full">
+                  <img 
+                    src="https://solana.com/src/img/branding/solanaLogoMark.svg"
+                    alt="Solana"
+                    className="h-5 w-5"
+                  />
+                </div>
+                <span className="text-white font-medium drop-shadow-md">Powered by Solana</span>
               </div>
 
               <h1 className="text-6xl md:text-8xl font-bold text-white mb-8 leading-tight tracking-tight drop-shadow-lg">
-                Deploy Solana RPC Nodes with{' '}
+              Self-Host Solana Nodes with{' '}
                 <span className="text-[#14F195] drop-shadow-[0_4px_8px_rgba(20,241,149,0.3)]">Ease</span>
               </h1>
               <p className="text-xl text-white mb-12 font-medium leading-relaxed max-w-2xl mx-auto drop-shadow-lg">
-                NodeEase simplifies blockchain infrastructure deployment. Set up your Solana RPC node on any cloud provider in minutes, not days.
+                NodeEase simplifies blockchain infrastructure deployment. Set up your Solana RPC node on AWS or Bare Metal in minutes, not days.
               </p>
               <button 
                 onClick={handleStartClick}
@@ -126,23 +128,34 @@ function App() {
 
               {/* Cloud Providers Section */}
               <div className="mt-16 flex flex-col items-center">
-                <p className="text-white/70 text-sm font-medium mb-8">Supported Cloud Providers</p>
-                <div className="grid grid-cols-3 gap-8 items-center">
-                  <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg"
-                    alt="AWS"
-                    className="h-8 opacity-70 hover:opacity-100 transition-opacity"
-                  />
-                  <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/a/a8/Microsoft_Azure_Logo.svg"
-                    alt="Azure"
-                    className="h-6 opacity-70 hover:opacity-100 transition-opacity"
-                  />
-                  <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/5/51/Google_Cloud_logo.svg"
-                    alt="Google Cloud"
-                    className="h-8 opacity-70 hover:opacity-100 transition-opacity"
-                  />
+                <p className="text-white/70 text-sm font-medium mb-8">Supported Providers</p>
+                <div className="flex justify-center gap-20 items-center w-full">
+                  {/* AWS Logo */}
+                  <div className="relative flex flex-col items-center justify-center w-48">
+                    <div className="h-28 flex items-center justify-center mb-3">
+                      <img 
+                        src="https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg"
+                        alt="AWS"
+                        className="h-14 opacity-70 hover:opacity-100 transition-opacity"
+                      />
+                    </div>
+                    <span className="text-white font-medium text-lg">AWS</span>
+                  </div>
+                  
+                  {/* Bare Metal Logo with Coming Soon banner */}
+                  <div className="relative flex flex-col items-center justify-center w-48">
+                    <div className="h-28 flex items-center justify-center mb-3 relative">
+                      <img 
+                        src="https://www.matroft.com/img/bare-metal-safe.svg"
+                        alt="Bare Metal"
+                        className="h-14 opacity-70 hover:opacity-100 transition-opacity"
+                      />
+                      <div className="absolute -top-3 right-0 bg-gradient-to-r from-[#9945FF] to-[#14F195] text-white text-xs font-bold py-1 px-3 rounded-full transform rotate-12 animate-pulse">
+                        Coming Soon
+                      </div>
+                    </div>
+                    <span className="text-white font-medium text-lg">Bare Metal</span>
+                  </div>
                 </div>
               </div>
             </div>

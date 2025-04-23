@@ -144,7 +144,7 @@ func AWSStatusHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get integration status from the database
+	// Get integration from database
 	integration, err := services.GetAWSIntegrationByUserID(userID)
 	if err != nil {
 		utils.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
@@ -153,11 +153,36 @@ func AWSStatusHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Return integration status
+	// Cast the Data field to AWSIntegrationData
+	awsData, ok := integration.Data.(models.AWSIntegrationData)
+	if !ok {
+		utils.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
+			"integrated": false,
+		})
+		return
+	}
+
+	// Decrypt credentials to get access key ID
+	accessKeyID, err := utils.Decrypt(awsData.AccessKeyID)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to decrypt credentials")
+		return
+	}
+
+	// Return integration status with masked access key ID
+	maskedKeyID := maskAccessKeyID(accessKeyID)
+
 	utils.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
-		"integrated": true,
-		"provider":   integration.Provider,
-		"region":     integration.Data.(models.AWSIntegrationData).Region,
-		"status":     integration.Status,
+		"integrated":  true,
+		"region":      awsData.Region,
+		"accessKeyId": maskedKeyID,
 	})
+}
+
+// Helper function to mask access key ID
+func maskAccessKeyID(keyID string) string {
+	if len(keyID) <= 4 {
+		return "****"
+	}
+	return keyID[:4] + "****************"
 }
