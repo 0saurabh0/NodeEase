@@ -24,7 +24,7 @@ func SetupRouter() *mux.Router {
 	protected.HandleFunc("/aws/test-connection", handlers.TestAWSConnectionHandler).Methods("POST")
 	protected.HandleFunc("/aws/integrate", handlers.IntegrateAWSHandler).Methods("POST")
 	protected.HandleFunc("/aws/status", handlers.AWSStatusHandler).Methods("GET")
-	// protected.HandleFunc("/aws/disconnect", handlers.DisconnectAWSHandler).Methods("POST")
+	protected.HandleFunc("/aws/disconnect", handlers.DisconnectAWSHandler).Methods("POST")
 
 	return router
 }

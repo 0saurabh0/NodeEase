@@ -125,3 +125,10 @@ func GetIntegrationByUserAndProvider(userID, provider string) (models.Integratio
 
 	return integration, nil
 }
+func DeleteIntegrationByUserAndProvider(userID, provider string) error {
+	_, err := DB.Exec(context.Background(), `
+		DELETE FROM integrations
+		WHERE user_id = $1 AND provider = $2
+	`, userID, provider)
+	return err
+}

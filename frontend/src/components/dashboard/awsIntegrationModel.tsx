@@ -5,12 +5,12 @@ interface AWSIntegrationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  mode: 'connect' | 'manage'; // Add this
-  existingConfig?: {  // Add this
+  mode: 'connect' | 'manage'; 
+  existingConfig?: {  
     region: string;
     accessKeyId: string;
   };
-  onDisconnect?: () => void; // Add this
+  onDisconnect?: () => void;
 }
 
 const AWSIntegrationModal: React.FC<AWSIntegrationModalProps> = ({ 
@@ -154,7 +154,7 @@ const AWSIntegrationModal: React.FC<AWSIntegrationModalProps> = ({
               <div className="mb-4">
                 <label className="block text-gray-300 mb-2">Access Key ID</label>
                 <div className="w-full bg-[#151C2C] border border-[#1E2D4A] rounded-xl px-4 py-3 text-white">
-                  {formData.accessKeyId}
+                  ••••••••••••••••••••••
                 </div>
               </div>
               

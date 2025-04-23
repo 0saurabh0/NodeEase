@@ -105,3 +105,7 @@ func decrypt(encrypted string) (string, error) {
 	// Implement decryption logic or use a utility function
 	return utils.Decrypt(encrypted)
 }
+
+func DisconnectAWSHandler(userID string) error {
+	return db.DeleteIntegrationByUserAndProvider(userID, "AWS")
+}

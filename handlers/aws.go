@@ -162,27 +162,25 @@ func AWSStatusHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Decrypt credentials to get access key ID
-	accessKeyID, err := utils.Decrypt(awsData.AccessKeyID)
-	if err != nil {
-		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to decrypt credentials")
-		return
-	}
-
-	// Return integration status with masked access key ID
-	maskedKeyID := maskAccessKeyID(accessKeyID)
-
 	utils.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
-		"integrated":  true,
-		"region":      awsData.Region,
-		"accessKeyId": maskedKeyID,
+		"integrated": true,
+		"region":     awsData.Region,
 	})
 }
 
-// Helper function to mask access key ID
-func maskAccessKeyID(keyID string) string {
-	if len(keyID) <= 4 {
-		return "****"
+func DisconnectAWSHandler(w http.ResponseWriter, r *http.Request) {
+	// Get user ID from context (set by auth middleware)
+	userID, ok := r.Context().Value(middleware.UserIDKey).(string)
+	if !ok {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Could not get user ID")
+		return
 	}
-	return keyID[:4] + "****************"
+
+	// Delete AWS integration record
+	if err := services.DisconnectAWSHandler(userID); err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to disconnect AWS: "+err.Error())
+		return
+	}
+
+	utils.RespondWithJSON(w, http.StatusOK, map[string]string{"message": "Disconnected from AWS successfully"})
 }
