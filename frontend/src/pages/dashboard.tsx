@@ -1,7 +1,8 @@
 // src/pages/Dashboard.tsx
 import React, { useState, useEffect } from 'react';
 import { Terminal, Server, Settings, Activity, Database, PlugZap, Bell, LogOut, User } from 'lucide-react';
-import IntegrateView from '../components/dashboard/Integrate';
+import IntegrateView from '../components/dashboard/integrate/Integrate';
+import NodeDeploymentView from '../components/dashboard/nodes/nodes';
 import { useNavigate } from 'react-router-dom';
 
 const DashboardLayout = () => {
@@ -50,6 +51,8 @@ const DashboardLayout = () => {
     switch (activeView) {
       case 'integrate':
         return <IntegrateView />;
+      case 'nodes':
+        return <NodeDeploymentView />;
       default:
         return (
           <>
