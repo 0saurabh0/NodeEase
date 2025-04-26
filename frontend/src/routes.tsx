@@ -1,8 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import App from './App';
 import DashboardLayout from './pages/dashboard';
+import api from './services/api';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -20,11 +20,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       
       try {
         // Make a request to your backend to verify the token
-        await axios.get('http://localhost:8080/api/auth/verify', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        await api.get('/api/auth/verify');
         
         setIsAuthenticated(true);
       } catch (error) {

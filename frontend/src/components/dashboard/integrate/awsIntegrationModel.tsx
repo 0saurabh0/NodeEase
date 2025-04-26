@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, AlertCircle, Check } from 'lucide-react';
+import api from '../../../services/api';
 
 interface AWSIntegrationModalProps {
   isOpen: boolean;
@@ -21,7 +22,6 @@ const AWSIntegrationModal: React.FC<AWSIntegrationModalProps> = ({
   existingConfig,
   onDisconnect
 }) => {
-  // Initialize form data with existing config if in manage mode
   const [formData, setFormData] = useState({
     accessKeyId: mode === 'manage' && existingConfig ? existingConfig.accessKeyId : '',
     secretAccessKey: '',
@@ -43,28 +43,15 @@ const AWSIntegrationModal: React.FC<AWSIntegrationModalProps> = ({
     setError(null);
     
     try {
-      const response = await fetch('http://localhost:8080/api/aws/test-connection', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
-        },
-        body: JSON.stringify({
-          integrationType: 'accessKey',
-          ...formData
-        })
+      await api.post('/api/aws/test-connection', {
+        integrationType: 'accessKey',
+        ...formData
       });
       
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to test AWS connection');
-      }
-      
       setTestStatus('success');
-    } catch (err) {
+    } catch (err: any) {
       setTestStatus('failed');
-      setError(err instanceof Error ? err.message : 'Failed to test AWS connection');
+      setError(err.response?.data?.message || 'Failed to test AWS connection');
     }
   };
 
@@ -74,52 +61,29 @@ const AWSIntegrationModal: React.FC<AWSIntegrationModalProps> = ({
     setError(null);
     
     try {
-      const response = await fetch('http://localhost:8080/api/aws/integrate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
-        },
-        body: JSON.stringify({
-          integrationType: 'accessKey',
-          ...formData
-        })
+      await api.post('/api/aws/integrate', {
+        integrationType: 'accessKey',
+        ...formData
       });
       
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to integrate AWS');
-      }
-      
       onSuccess();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to integrate AWS');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to integrate AWS');
     } finally {
       setLoading(false);
     }
   };
 
-  // Add a disconnect handler
   const handleDisconnect = async () => {
     if (confirm("Are you sure you want to disconnect from AWS?")) {
       setLoading(true);
       try {
-        const response = await fetch('http://localhost:8080/api/aws/disconnect', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('jwtToken')}`
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to disconnect from AWS');
-        }
+        await api.post('/api/aws/disconnect');
         
         if (onDisconnect) onDisconnect();
         onClose();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to disconnect');
+      } catch (err: any) {
+        setError(err.response?.data?.message || 'Failed to disconnect from AWS');
       } finally {
         setLoading(false);
       }

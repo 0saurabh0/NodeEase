@@ -3,7 +3,7 @@ import { Terminal, Server, Globe, Github, Code, Zap, Lock, Clock } from 'lucide-
 import OnboardingModal from './components/OnBoadingModel';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from './services/api';
 
 function App() {
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -24,11 +24,7 @@ function App() {
     
     try {
       // Verify if the token is valid
-      await axios.get('http://localhost:8080/api/auth/verify', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      await api.get('/api/auth/verify');
       
       // Token is valid, redirect to dashboard
       navigate('/dashboard');

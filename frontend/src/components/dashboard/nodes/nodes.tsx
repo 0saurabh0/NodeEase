@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../../services/api';
 import { AlertCircle, Server, Check, Info } from 'lucide-react';
 
 // Configuration presets based on RPC type
@@ -55,11 +55,7 @@ const NodeDeploymentView = () => {
         const token = localStorage.getItem('jwtToken');
         if (!token) return;
         
-        const response = await axios.get('http://localhost:8080/api/aws/status', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
+        const response = await api.get('/api/aws/status');
         
         if (response.data && response.data.integrated) {
           setAwsIntegrated(true);
@@ -130,20 +126,13 @@ const NodeDeploymentView = () => {
     setDeploymentSuccess(false);
     
     try {
-      const token = localStorage.getItem('jwtToken');
-      if (!token) throw new Error("Authentication required");
-      
-      const response = await axios.post('http://localhost:8080/api/nodes/deploy', formData, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await api.post('/api/nodes/deploy', formData);
       
       setDeploymentSuccess(true);
       // Reset form or redirect to node details page
       console.log('Node deployment started:', response.data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to deploy node');
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.message || 'Failed to deploy node');
       console.error('Deployment error:', err);
     } finally {
       setLoading(false);

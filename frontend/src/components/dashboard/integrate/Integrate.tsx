@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../../services/api';
 import AWSIntegrationModal from './awsIntegrationModel';
 
 const CLOUD_PROVIDERS = [
@@ -43,11 +43,7 @@ const IntegrateView = () => {
       const token = localStorage.getItem('jwtToken');
       if (!token) return;
       
-      const response = await axios.get('http://localhost:8080/api/aws/status', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      const response = await api.get('/api/aws/status');
       
       if (response.data && response.data.integrated) {
         setAwsConnected(true);

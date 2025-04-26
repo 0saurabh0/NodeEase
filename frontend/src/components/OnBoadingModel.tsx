@@ -2,7 +2,7 @@ import { Github } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 
 export default function OnboardingModal({ onClose }: { onClose: () => void }) {
   const [authError, setAuthError] = useState<string | null>(null);
@@ -31,7 +31,7 @@ export default function OnboardingModal({ onClose }: { onClose: () => void }) {
       }));
 
       // Send token to backend
-      const res = await axios.post("http://localhost:8080/api/auth/google", {
+      const res = await api.post("/api/auth/google", {
         token,
       });
       localStorage.setItem("jwtToken", res.data.token);
