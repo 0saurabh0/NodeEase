@@ -52,7 +52,7 @@ const DashboardLayout = () => {
       case 'integrate':
         return <IntegrateView />;
       case 'nodes':
-        return <NodeDeploymentView />;
+        return <NodeDeploymentView navigateToIntegrate={() => setActiveView('integrate')} />;
       default:
         return (
           <>

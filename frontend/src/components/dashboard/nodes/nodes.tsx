@@ -1,17 +1,20 @@
 import { useState, useEffect } from 'react';
 import api from '../../../services/api';
-import { AlertCircle, Server, Check, Info } from 'lucide-react';
+import { AlertCircle, Server, Check, Info, ExternalLink } from 'lucide-react';
+
+// AWS Blog reference
+const AWS_BLOG_URL = 'https://aws.amazon.com/blogs/web3/run-solana-nodes-on-aws/';
 
 // Configuration presets based on RPC type
 const RECOMMENDED_CONFIGS = {
   'base': {
-    instanceType: 't3.2xlarge',
+    instanceType: 'r7a.16xlarge',
     diskSize: 500,
     historyLength: 'minimal',
     networkType: 'mainnet',
   },
   'extended': {
-    instanceType: 'c5.4xlarge',
+    instanceType: 'r7a.24xlarge',
     diskSize: 2000,
     historyLength: 'full',
     networkType: 'mainnet',
@@ -20,14 +23,17 @@ const RECOMMENDED_CONFIGS = {
 
 // AWS instance types with descriptions
 const INSTANCE_TYPES = {
-  't3.2xlarge': { vCPU: 8, memory: '32 GB', description: 'General purpose', recommended: 'Base RPC' },
-  't3.xlarge': { vCPU: 4, memory: '16 GB', description: 'General purpose', recommended: 'Minimal' },
-  'c5.4xlarge': { vCPU: 16, memory: '32 GB', description: 'Compute optimized', recommended: 'Extended RPC' },
-  'm5.2xlarge': { vCPU: 8, memory: '32 GB', description: 'Memory optimized', recommended: '' },
-  'r5.2xlarge': { vCPU: 8, memory: '64 GB', description: 'Memory optimized', recommended: 'Archive nodes' },
+  'r7a.16xlarge': { vCPU: 64, memory: '512 GB', description: 'Memory optimized', recommended: 'Base RPC' },
+  'r7a.24xlarge': { vCPU: 96, memory: '768 GB', description: 'Memory optimized', recommended: 'Extended RPC' },
+  'i7ie.16xlarge': { vCPU: 64, memory: '576 GB', description: 'Memory optimized', recommended: 'Base RPC (Alternative)' },
+  'i7ie.24xlarge': { vCPU: 96, memory: '768 GB', description: 'Memory optimized', recommended: 'Extended RPC (Alternative)' },
 };
 
-const NodeDeploymentView = () => {
+interface NodeDeploymentViewProps {
+  navigateToIntegrate?: () => void;
+}
+
+const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToIntegrate }) => {
   // AWS Integration check
   const [awsIntegrated, setAwsIntegrated] = useState(false);
   const [awsRegion, setAwsRegion] = useState('');
@@ -39,7 +45,7 @@ const NodeDeploymentView = () => {
   const [formData, setFormData] = useState({
     rpcType: 'base',
     configMode: 'recommended',
-    instanceType: 't3.2xlarge',
+    instanceType: 'r7a.16xlarge',
     diskSize: 500,
     snapshots: true,
     historyLength: 'minimal', // minimal, recent, full
@@ -149,7 +155,7 @@ const NodeDeploymentView = () => {
           You need to connect your AWS account before deploying Solana nodes.
         </p>
         <button 
-          onClick={() => window.location.hash = '#integrate'}
+          onClick={navigateToIntegrate} 
           className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl text-white font-medium"
         >
           Go to Integration
@@ -160,6 +166,27 @@ const NodeDeploymentView = () => {
 
   return (
     <div className="max-w-4xl">
+      {/* AWS Blog Link */}
+      <div className="mb-8 bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
+        <div className="flex items-start gap-3">
+          <Info className="w-5 h-5 text-blue-400 mt-0.5" />
+          <div>
+            <p className="text-blue-400 font-medium">Learn more about running Solana nodes on AWS</p>
+            <p className="text-gray-300 text-sm mt-1">
+              Check out the official AWS guide for detailed information about node types, infrastructure requirements, and best practices.
+            </p>
+            <a 
+              href={AWS_BLOG_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 text-sm mt-2"
+            >
+              Read the AWS guide <ExternalLink className="w-4 h-4" />
+            </a>
+          </div>
+        </div>
+      </div>
+
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-3xl font-bold text-white">Deploy Solana Node</h2>
       </div>
@@ -208,7 +235,7 @@ const NodeDeploymentView = () => {
                 <h4 className="text-lg font-medium text-white">Base RPC</h4>
               </div>
               <p className="text-gray-400 text-sm mb-4">
-                Standard RPC node with essential functionality for most dApps
+                Standard RPC node that processes most JSON RPC API calls, except for full account scans and SPL token queries. Exposes HTTP and WebSocket endpoints for dApp interaction.
               </p>
               <div className="mt-auto text-sm text-blue-400">
                 Recommended for: Standard dApps, wallets, basic integrations
@@ -229,7 +256,7 @@ const NodeDeploymentView = () => {
                 <h4 className="text-lg font-medium text-white">Extended RPC</h4>
               </div>
               <p className="text-gray-400 text-sm mb-4">
-                Advanced node with full history and enhanced functionality
+                Advanced node with secondary indexes that can process all JSON RPC API methods, including full account scans and SPL token queries. Requires 512GB-1TB RAM.
               </p>
               <div className="mt-auto text-sm text-blue-400">
                 Recommended for: DeFi platforms, NFT marketplaces, data analytics
