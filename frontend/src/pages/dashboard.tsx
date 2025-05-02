@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Terminal, Server, Settings, Activity, Database, PlugZap, Bell, LogOut, User } from 'lucide-react';
 import IntegrateView from '../components/dashboard/integrate/Integrate';
 import NodeDeploymentView from '../components/dashboard/nodes/nodes';
+import SettingsView from '../components/dashboard/settings/settings';
 import { useNavigate } from 'react-router-dom';
 
 const DashboardLayout = () => {
@@ -53,6 +54,8 @@ const DashboardLayout = () => {
         return <IntegrateView />;
       case 'nodes':
         return <NodeDeploymentView navigateToIntegrate={() => setActiveView('integrate')} />;
+      case 'settings':
+        return <SettingsView />;
       default:
         return (
           <>
@@ -118,8 +121,8 @@ const DashboardLayout = () => {
         </div>
         <nav className="mt-6 px-3">
           {[
-            { icon: PlugZap, label: 'Integrate', value: 'integrate' },
             { icon: Terminal, label: 'Overview', value: 'overview' },
+            { icon: PlugZap, label: 'Integrate', value: 'integrate' },
             { icon: Server, label: 'Nodes', value: 'nodes' },
             { icon: Database, label: 'Resources', value: 'resources' },
             { icon: Activity, label: 'Monitoring', value: 'monitoring' },

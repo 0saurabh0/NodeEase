@@ -29,6 +29,13 @@ const INSTANCE_TYPES = {
   'i7ie.24xlarge': { vCPU: 96, memory: '768 GB', description: 'Memory optimized', recommended: 'Extended RPC (Alternative)' },
 };
 
+const INSTANCE_COSTS = {
+  'r7a.16xlarge': 250,
+  'r7a.24xlarge': 350,
+  'i7ie.16xlarge': 300,
+  'i7ie.24xlarge': 400,
+};
+
 interface NodeDeploymentViewProps {
   navigateToIntegrate?: () => void;
 }
@@ -166,23 +173,27 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
 
   return (
     <div className="max-w-4xl">
-      {/* AWS Blog Link */}
-      <div className="mb-8 bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
-        <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-blue-400 mt-0.5" />
+      {/* AWS Blog Link - Enhanced */}
+      <div className="mb-8 bg-gradient-to-r from-blue-900/40 to-indigo-900/40 border border-blue-500/40 rounded-xl p-5 shadow-lg">
+        <div className="flex items-start gap-4">
+          <div className="bg-blue-500/20 p-3 rounded-xl">
+            <Info className="w-6 h-6 text-blue-400" />
+          </div>
           <div>
-            <p className="text-blue-400 font-medium">Learn more about running Solana nodes on AWS</p>
-            <p className="text-gray-300 text-sm mt-1">
-              Check out the official AWS guide for detailed information about node types, infrastructure requirements, and best practices.
+            <h3 className="text-xl font-semibold text-white mb-1">Solana on AWS Resources</h3>
+            <p className="text-gray-300 text-sm">
+              Learn about node types, infrastructure requirements, and best practices for running production-grade Solana nodes.
             </p>
-            <a 
-              href={AWS_BLOG_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 text-sm mt-2"
-            >
-              Read the AWS guide <ExternalLink className="w-4 h-4" />
-            </a>
+            <div className="mt-3">
+              <a 
+                href={AWS_BLOG_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 hover:text-blue-200 transition-all px-4 py-2 rounded-lg font-medium"
+              >
+                Read the AWS guide <ExternalLink className="w-4 h-4" />
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -296,6 +307,40 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
               </label>
             </div>
 
+            {/* Always visible mandatory fields - MOVED HERE to be visible in both modes */}
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="nodeName" className="block text-gray-300 mb-2">
+                  Node Name <span className="text-blue-400">*</span>
+                </label>
+                <input
+                  id="nodeName"
+                  name="nodeName"
+                  type="text"
+                  value={formData.nodeName}
+                  onChange={handleInputChange}
+                  className="w-full bg-[#151C2C] border border-[#1E2D4A] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="networkType" className="block text-gray-300 mb-2">
+                  Network <span className="text-blue-400">*</span>
+                </label>
+                <select
+                  id="networkType"
+                  name="networkType"
+                  value={formData.networkType}
+                  onChange={handleInputChange}
+                  className="w-full bg-[#151C2C] border border-[#1E2D4A] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500"
+                >
+                  <option value="mainnet">Mainnet</option>
+                  <option value="testnet">Testnet</option>
+                  <option value="devnet">Devnet</option>
+                </select>
+              </div>
+            </div>
+
             {/* Recommended Configuration Details */}
             {formData.configMode === 'recommended' && (
               <div className="bg-[#151C2C] rounded-xl p-6 border border-[#1E2D4A]">
@@ -317,10 +362,6 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
                     <span className="text-white ml-2">{formData.historyLength === 'minimal' ? 'Minimal (recent slots)' : formData.historyLength === 'recent' ? 'Recent (90 days)' : 'Full'}</span>
                   </div>
                   <div>
-                    <span className="text-gray-400">Network:</span>
-                    <span className="text-white ml-2">{formData.networkType.charAt(0).toUpperCase() + formData.networkType.slice(1)}</span>
-                  </div>
-                  <div>
                     <span className="text-gray-400">Snapshots:</span>
                     <span className="text-white ml-2">{formData.snapshots ? 'Enabled' : 'Disabled'}</span>
                   </div>
@@ -331,10 +372,12 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
                 </div>
               </div>
             )}
-
+            
             {/* Custom Configuration Options */}
             {formData.configMode === 'custom' && (
               <div className="grid grid-cols-2 gap-6">
+                {/* Remove the duplicate node name and network fields that were here */}
+                
                 <div>
                   <label htmlFor="instanceType" className="block text-gray-300 mb-2">
                     Instance Type
@@ -414,37 +457,6 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
                   </select>
                 </div>
                 
-                <div>
-                  <label htmlFor="networkType" className="block text-gray-300 mb-2">
-                    Network
-                  </label>
-                  <select
-                    id="networkType"
-                    name="networkType"
-                    value={formData.networkType}
-                    onChange={handleInputChange}
-                    className="w-full bg-[#151C2C] border border-[#1E2D4A] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500"
-                  >
-                    <option value="mainnet">Mainnet</option>
-                    <option value="testnet">Testnet</option>
-                    <option value="devnet">Devnet</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label htmlFor="nodeName" className="block text-gray-300 mb-2">
-                    Node Name
-                  </label>
-                  <input
-                    id="nodeName"
-                    name="nodeName"
-                    type="text"
-                    value={formData.nodeName}
-                    onChange={handleInputChange}
-                    className="w-full bg-[#151C2C] border border-[#1E2D4A] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-                
                 <div className="flex items-center">
                   <label className="flex items-center gap-3 cursor-pointer">
                     <input
@@ -465,41 +477,70 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
           </div>
         </div>
 
-        {/* Cost Estimation */}
+        {/* Cost Estimation - Enhanced */}
         <div className="bg-[#111827]/50 backdrop-blur-xl rounded-2xl p-8 border border-[#1E2D4A]">
           <div className="flex items-center gap-2 mb-6">
-            <h3 className="text-xl font-semibold text-white">3. Estimated Cost</h3>
+            <h3 className="text-xl font-semibold text-white">3. Estimated Monthly Cost</h3>
             <div className="relative group">
-              <Info className="w-5 h-5 text-gray-400 cursor-help" />
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-3 bg-[#151C2C] border border-[#1E2D4A] rounded-xl w-64 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-10 text-sm text-gray-300">
-                This is an estimated monthly cost based on AWS pricing. Actual costs may vary.
+              <Info className="w-5 h-5 text-blue-400 cursor-help" />
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-4 bg-[#151C2C] border border-[#1E2D4A] rounded-xl w-80 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all duration-200 z-10 text-sm text-gray-300">
+                <p>This is an estimated monthly cost based on AWS on-demand pricing.</p>
+                <p className="mt-2">Costs may vary based on:</p>
+                <ul className="list-disc pl-4 mt-1 space-y-1">
+                  <li>Actual usage patterns</li>
+                  <li>Data transfer volume</li>
+                  <li>AWS region selected</li>
+                  <li>AWS pricing changes</li>
+                </ul>
               </div>
             </div>
           </div>
           
           <div className="bg-[#151C2C] rounded-xl p-6 border border-[#1E2D4A]">
-            <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-              <div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+              <div className="flex justify-between">
                 <span className="text-gray-400">EC2 Instance:</span>
-                <span className="text-white ml-2">$250.00/month</span>
-              </div>
-              <div>
-                <span className="text-gray-400">Storage:</span>
-                <span className="text-white ml-2">${(formData.diskSize * 0.1).toFixed(2)}/month</span>
-              </div>
-              <div>
-                <span className="text-gray-400">Data Transfer:</span>
-                <span className="text-white ml-2">$50.00/month (estimated)</span>
-              </div>
-              <div>
-                <span className="text-gray-400">Snapshots:</span>
-                <span className="text-white ml-2">${formData.snapshots ? '15.00' : '0.00'}/month</span>
-              </div>
-              <div className="col-span-2 pt-3 mt-3 border-t border-[#1E2D4A]">
-                <span className="text-gray-300 font-semibold">Total Estimated:</span>
-                <span className="text-white font-bold ml-2">
-                  ${(formData.diskSize * 0.1 + (formData.snapshots ? 315 : 300)).toFixed(2)}/month
+                <span className="text-white font-medium">
+                  ${INSTANCE_COSTS[formData.instanceType as keyof typeof INSTANCE_COSTS]}/month
                 </span>
+              </div>
+              
+              <div className="flex justify-between">
+                <div className="flex items-center gap-1">
+                  <span className="text-gray-400">EBS Storage:</span>
+                  <span className="text-xs text-gray-500">({formData.diskSize} GB)</span>
+                </div>
+                <span className="text-white font-medium">${(formData.diskSize * 0.1).toFixed(2)}/month</span>
+              </div>
+              
+              <div className="flex justify-between">
+                <span className="text-gray-400">Data Transfer:</span>
+                <span className="text-white font-medium">~$80.00/month</span>
+              </div>
+              
+              <div className="flex justify-between">
+                <span className="text-gray-400">Snapshots:</span>
+                <span className="text-white font-medium">${formData.snapshots ? '25.00' : '0.00'}/month</span>
+              </div>
+              
+              <div className="col-span-1 md:col-span-2 pt-4 mt-2 border-t border-[#1E2D4A]">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                  <span className="text-gray-300 font-semibold mb-1 sm:mb-0">Total Estimated:</span>
+                  <div className="text-right">
+                    <span className="text-2xl font-bold text-white">
+                      ${(
+                        INSTANCE_COSTS[formData.instanceType as keyof typeof INSTANCE_COSTS] + 
+                        formData.diskSize * 0.1 + 
+                        80 + 
+                        (formData.snapshots ? 25 : 0)
+                      ).toFixed(2)}
+                    </span>
+                    <span className="text-gray-400 text-sm ml-1">/month</span>
+                  </div>
+                </div>
+                <p className="text-amber-400/70 text-xs mt-3">
+                  * These are approximate costs. Consider reserved instances for production deployments to reduce costs.
+                </p>
               </div>
             </div>
           </div>
