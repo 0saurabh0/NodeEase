@@ -14,6 +14,7 @@ const DashboardLayout = () => {
     picture: ''
   });
   const [profileImageError, setProfileImageError] = useState(false);
+  const [profileImageLoading, setProfileImageLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,6 +29,8 @@ const DashboardLayout = () => {
         try {
           const parsedProfile = JSON.parse(storedProfile);
           setUserProfile(parsedProfile);
+          setProfileImageLoading(true); // Reset loading state when profile changes
+          setProfileImageError(false); // Reset error state
         } catch (error) {
           console.error('Error parsing stored profile:', error);
           setProfileImageError(true);
@@ -156,15 +159,26 @@ const DashboardLayout = () => {
             </button>
             <div className="relative group">
               {userProfile.picture && !profileImageError ? (
-                <img 
-                  src={userProfile.picture} 
-                  alt="Profile" 
-                  className="h-8 w-8 rounded-full object-cover cursor-pointer ring-2 ring-blue-500/50"
-                  onError={() => setProfileImageError(true)}
-                />
+                <>
+                  {profileImageLoading && (
+                    <div className="h-10 w-10 rounded-full bg-[#111827] flex items-center justify-center">
+                      <div className="h-5 w-5 border-2 border-t-blue-500 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+                    </div>
+                  )}
+                  <img 
+                    src={userProfile.picture}
+                    alt="Profile" 
+                    className={`h-10 w-10 rounded-full object-cover cursor-pointer ring-2 ring-blue-500/50 ${profileImageLoading ? 'hidden' : 'block'}`}
+                    onLoad={() => setProfileImageLoading(false)}
+                    onError={() => {
+                      setProfileImageLoading(false);
+                      setProfileImageError(true);
+                    }}
+                  />
+                </>
               ) : (
-                <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center">
-                  <User className="w-4 h-4 text-white" />
+                <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center">
+                  <User className="w-5 h-5 text-white" />
                 </div>
               )}
               <div className="absolute right-0 mt-2 w-48 bg-[#111827]/95 backdrop-blur-xl rounded-xl shadow-lg border border-[#1E2D4A] 

@@ -68,6 +68,31 @@ func createTables() error {
 		return fmt.Errorf("failed to create integrations table: %v", err)
 	}
 
+	// Create nodes table
+	_, err = DB.Exec(context.Background(), `
+        CREATE TABLE IF NOT EXISTS nodes (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            name TEXT NOT NULL,
+            provider TEXT NOT NULL,
+            region TEXT NOT NULL,
+            instance_type TEXT NOT NULL,
+            instance_id TEXT,
+            node_type TEXT NOT NULL,
+            network_type TEXT NOT NULL,
+            status TEXT NOT NULL,
+            status_detail TEXT,
+            ip_address TEXT,
+            disk_size INTEGER NOT NULL,
+            rpc_endpoint TEXT,
+            created_at TIMESTAMP NOT NULL,
+            updated_at TIMESTAMP NOT NULL
+        )
+    `)
+	if err != nil {
+		return fmt.Errorf("failed to create nodes table: %v", err)
+	}
+
 	return nil
 }
 
