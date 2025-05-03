@@ -116,7 +116,7 @@ function App() {
                   </span>
                 ) : (
                   <>
-                    Deploy Now
+                    Start Free Deployment
                     <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300">→</span>
                   </>
                 )}
@@ -159,24 +159,31 @@ function App() {
             {/* Steps Section */}
             <div className="mt-32 relative">
               <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/5 to-transparent backdrop-blur-sm rounded-[3rem] -mx-8"></div>
-              <div className="relative grid md:grid-cols-3 gap-8 px-8 py-16">
-                {[
-                  { icon: Terminal, title: "1. Connect", desc: "Link your cloud provider account or use our managed infrastructure." },
-                  { icon: Server, title: "2. Configure", desc: "Choose your node specifications and region with our simple interface." },
-                  { icon: Globe, title: "3. Launch", desc: "Click deploy and your node will be live within minutes." }
-                ].map((item, i) => (
-                  <div key={i} className="group">
-                    <div className="bg-white/5 backdrop-blur-xl rounded-[2rem] p-10 text-white border border-white/10 transition-all duration-500 hover:scale-105 hover:bg-white/10">
-                      <div className="bg-gradient-to-br from-[#9945FF] to-[#14F195] rounded-2xl w-14 h-14 flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-500">
-                        {React.createElement(item.icon, { className: "h-6 w-6 text-white" })}
+              <div className="relative px-8 py-16">
+                <div className="relative flex flex-col md:flex-row gap-8">
+                  {/* Connection lines between steps (visible on md screens and up) */}
+                  <div className="absolute top-1/3 left-0 right-0 h-1 bg-gradient-to-r from-[#9945FF] to-[#14F195] hidden md:block"></div>
+                  
+                  {[
+                    { icon: Terminal, title: "Connect", desc: "Easily link your cloud — no API fuss." },
+                    { icon: Server, title: "Configure", desc: "Choose node specs and region, we handle the complexity." },
+                    { icon: Globe, title: "Launch", desc: "Your node is live in minutes — you focus on your app." }
+                  ].map((item, i) => (
+                    <div key={i} className="group flex-1 relative z-10">
+                      <div className="bg-white/5 backdrop-blur-xl rounded-[2rem] p-8 text-white border border-white/10 transition-all duration-300 hover:bg-white/10 min-h-[300px] flex flex-col">
+                        <div className="bg-gradient-to-br from-[#9945FF] to-[#14F195] rounded-2xl p-4 w-14 h-14 flex items-center justify-center mb-6 shadow-lg">
+                          {React.createElement(item.icon, { className: "h-7 w-7 text-white" })}
+                        </div>
+                        <h3 className="text-2xl font-bold mb-3 text-white">
+                          <span className="text-[#14F195] mr-2">{i+1}.</span>{item.title}
+                        </h3>
+                        <p className="text-white/90 text-lg font-medium leading-relaxed flex-grow">
+                          {item.desc}
+                        </p>
                       </div>
-                      <h3 className="text-2xl font-semibold mb-4 drop-shadow-lg">{item.title}</h3>
-                      <p className="text-white/90 font-medium leading-relaxed drop-shadow">
-                        {item.desc}
-                      </p>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
 

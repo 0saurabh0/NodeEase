@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/0saurabh0/NodeEase/db"
+	"github.com/0saurabh0/NodeEase/db/repository"
 	"github.com/0saurabh0/NodeEase/models"
 	"github.com/0saurabh0/NodeEase/utils"
 	"github.com/aws/aws-sdk-go/aws"
@@ -27,7 +27,7 @@ func SaveAWSIntegration(userID string, integration models.Integration) error {
 		integration.CreatedAt = existing.CreatedAt
 		integration.UpdatedAt = now
 
-		return db.UpdateIntegration(integration)
+		return repository.UpdateIntegration(integration)
 	}
 
 	// Create new integration
@@ -35,12 +35,12 @@ func SaveAWSIntegration(userID string, integration models.Integration) error {
 	integration.CreatedAt = now
 	integration.UpdatedAt = now
 
-	return db.SaveIntegration(integration)
+	return repository.SaveIntegration(integration)
 }
 
 // GetAWSIntegrationByUserID retrieves AWS integration for a user
 func GetAWSIntegrationByUserID(userID string) (models.Integration, error) {
-	integration, err := db.GetIntegrationByUserAndProvider(userID, "AWS")
+	integration, err := repository.GetIntegrationByUserAndProvider(userID, "AWS")
 	if err != nil {
 		return models.Integration{}, err
 	}
@@ -107,5 +107,5 @@ func decrypt(encrypted string) (string, error) {
 }
 
 func DisconnectAWSHandler(userID string) error {
-	return db.DeleteIntegrationByUserAndProvider(userID, "AWS")
+	return repository.DeleteIntegrationByUserAndProvider(userID, "AWS")
 }

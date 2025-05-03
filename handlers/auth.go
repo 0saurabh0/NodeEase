@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/0saurabh0/NodeEase/services"
 	"github.com/0saurabh0/NodeEase/utils"
 
 	"google.golang.org/api/idtoken"
@@ -43,7 +44,12 @@ func GoogleAuthHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Extract user info
 	email := payload.Claims["email"].(string)
-	// name := payload.Claims["name"].(string)
+	name := payload.Claims["name"].(string)
+	picture := payload.Claims["picture"].(string)
+	if err := services.CreateOrUpdateUserFromGoogle(email, name, picture); err != nil {
+		http.Error(w, "Failed to update user profile", http.StatusInternalServerError)
+		return
+	}
 
 	// Generate JWT token
 	jwtToken, err := utils.GenerateJWT(email)
