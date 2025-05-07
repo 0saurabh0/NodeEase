@@ -9,6 +9,7 @@ import (
 	"github.com/0saurabh0/NodeEase/services"
 	"github.com/0saurabh0/NodeEase/utils"
 
+	"github.com/0saurabh0/NodeEase/middleware"
 	"google.golang.org/api/idtoken"
 )
 
@@ -19,6 +20,11 @@ type AuthRequest struct {
 type AuthResponse struct {
 	Status string `json:"status"`
 	Token  string `json:"token"`
+	User   struct {
+		Name    string `json:"name"`
+		Email   string `json:"email"`
+		Picture string `json:"picture"`
+	} `json:"user"`
 }
 
 func GoogleAuthHandler(w http.ResponseWriter, r *http.Request) {
@@ -46,6 +52,8 @@ func GoogleAuthHandler(w http.ResponseWriter, r *http.Request) {
 	email := payload.Claims["email"].(string)
 	name := payload.Claims["name"].(string)
 	picture := payload.Claims["picture"].(string)
+
+	// Store user data in database
 	if err := services.CreateOrUpdateUserFromGoogle(email, name, picture); err != nil {
 		http.Error(w, "Failed to update user profile", http.StatusInternalServerError)
 		return
@@ -58,8 +66,22 @@ func GoogleAuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Send response
-	response := AuthResponse{Status: "success", Token: jwtToken}
+	// Send response with user profile data
+	response := AuthResponse{
+		Status: "success",
+		Token:  jwtToken,
+		User: struct {
+			Name    string `json:"name"`
+			Email   string `json:"email"`
+			Picture string `json:"picture"`
+		}{
+			Name:    name,
+			Email:   email,
+			Picture: picture,
+		},
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
@@ -94,4 +116,28 @@ func VerifyTokenHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+}
+
+// GetUserProfileHandler returns the user profile
+func GetUserProfileHandler(w http.ResponseWriter, r *http.Request) {
+	// Get user ID (email) from context
+	email, ok := r.Context().Value(middleware.UserIDKey).(string)
+	if !ok {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Could not get user ID")
+		return
+	}
+
+	// Get user from database
+	user, err := services.GetUserByEmail(email)
+	if err != nil {
+		utils.RespondWithError(w, http.StatusInternalServerError, "Failed to get user: "+err.Error())
+		return
+	}
+
+	// Return user profile
+	utils.RespondWithJSON(w, http.StatusOK, map[string]interface{}{
+		"name":    user.Name,
+		"email":   user.Email,
+		"picture": user.ProfilePicture,
+	})
 }

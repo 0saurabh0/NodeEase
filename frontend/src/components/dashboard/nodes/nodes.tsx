@@ -47,6 +47,7 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deploymentSuccess, setDeploymentSuccess] = useState(false);
+  const [simulationMode, setSimulationMode] = useState(true);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -139,11 +140,11 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
     setDeploymentSuccess(false);
     
     try {
-      const response = await api.post('/api/nodes/deploy', formData);
+      const endpoint = simulationMode ? '/api/nodes/simulate' : '/api/nodes/deploy';
+      const response = await api.post(endpoint, formData);
       
       setDeploymentSuccess(true);
-      // Reset form or redirect to node details page
-      console.log('Node deployment started:', response.data);
+      console.log(`Node deployment started:`, response.data);
     } catch (err: any) {
       setError(err.response?.data?.error || err.message || 'Failed to deploy node');
       console.error('Deployment error:', err);
@@ -202,6 +203,23 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
         <h2 className="text-3xl font-bold text-white">Deploy Solana Node</h2>
       </div>
 
+      <div className="flex items-center mb-8">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={simulationMode}
+            onChange={(e) => setSimulationMode(e.target.checked)}
+            className="sr-only"
+          />
+          <div className={`w-5 h-5 rounded flex items-center justify-center ${
+            simulationMode ? 'bg-blue-500' : 'bg-[#151C2C] border border-[#1E2D4A]'
+          }`}>
+            {simulationMode && <Check className="w-3 h-3 text-white" />}
+          </div>
+          <span className="text-white">Simulation Mode (No AWS costs)</span>
+        </label>
+      </div>
+
       {/* Success message */}
       {deploymentSuccess && (
         <div className="mb-8 bg-green-500/10 border border-green-500/30 rounded-xl p-4 flex items-start gap-3">
@@ -209,7 +227,7 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
           <div>
             <p className="text-green-400 font-medium">Node deployment started successfully!</p>
             <p className="text-gray-300 text-sm mt-1">
-              Your node is being provisioned. This process may take 10-15 minutes.
+              Your node is being provisioned. This process may take 10-15 minutes for infrastructure setup and several hours for blockchain synchronization.
             </p>
           </div>
         </div>
@@ -226,7 +244,7 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <div className="space-y-8">
         {/* Node Type Selection */}
         <div className="bg-[#111827]/50 backdrop-blur-xl rounded-2xl p-8 border border-[#1E2D4A]">
           <h3 className="text-xl font-semibold text-white mb-6">1. Select Node Type</h3>
@@ -307,7 +325,7 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
               </label>
             </div>
 
-            {/* Always visible mandatory fields - MOVED HERE to be visible in both modes */}
+            {/* Always visible mandatory fields */}
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <label htmlFor="nodeName" className="block text-gray-300 mb-2">
@@ -376,8 +394,6 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
             {/* Custom Configuration Options */}
             {formData.configMode === 'custom' && (
               <div className="grid grid-cols-2 gap-6">
-                {/* Remove the duplicate node name and network fields that were here */}
-                
                 <div>
                   <label htmlFor="instanceType" className="block text-gray-300 mb-2">
                     Instance Type
@@ -477,7 +493,7 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
           </div>
         </div>
 
-        {/* Cost Estimation - Enhanced */}
+        {/* Cost Estimation - Simplified */}
         <div className="bg-[#111827]/50 backdrop-blur-xl rounded-2xl p-8 border border-[#1E2D4A]">
           <div className="flex items-center gap-2 mb-6">
             <h3 className="text-xl font-semibold text-white">3. Estimated Monthly Cost</h3>
@@ -501,7 +517,7 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
               <div className="flex justify-between">
                 <span className="text-gray-400">EC2 Instance:</span>
                 <span className="text-white font-medium">
-                  ${INSTANCE_COSTS[formData.instanceType as keyof typeof INSTANCE_COSTS]}/month
+                  ${INSTANCE_COSTS[formData.instanceType as keyof typeof INSTANCE_COSTS].toFixed(2)}/month
                 </span>
               </div>
               
@@ -510,7 +526,9 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
                   <span className="text-gray-400">EBS Storage:</span>
                   <span className="text-xs text-gray-500">({formData.diskSize} GB)</span>
                 </div>
-                <span className="text-white font-medium">${(formData.diskSize * 0.1).toFixed(2)}/month</span>
+                <span className="text-white font-medium">
+                  ${(formData.diskSize * 0.1).toFixed(2)}/month
+                </span>
               </div>
               
               <div className="flex justify-between">
@@ -520,7 +538,9 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
               
               <div className="flex justify-between">
                 <span className="text-gray-400">Snapshots:</span>
-                <span className="text-white font-medium">${formData.snapshots ? '25.00' : '0.00'}/month</span>
+                <span className="text-white font-medium">
+                  ${formData.snapshots ? 25.00 : 0.00}/month
+                </span>
               </div>
               
               <div className="col-span-1 md:col-span-2 pt-4 mt-2 border-t border-[#1E2D4A]">
@@ -528,12 +548,14 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
                   <span className="text-gray-300 font-semibold mb-1 sm:mb-0">Total Estimated:</span>
                   <div className="text-right">
                     <span className="text-2xl font-bold text-white">
-                      ${(
-                        INSTANCE_COSTS[formData.instanceType as keyof typeof INSTANCE_COSTS] + 
-                        formData.diskSize * 0.1 + 
-                        80 + 
-                        (formData.snapshots ? 25 : 0)
-                      ).toFixed(2)}
+                      ${(() => {
+                        const instanceCost = INSTANCE_COSTS[formData.instanceType as keyof typeof INSTANCE_COSTS];
+                        const storageCost = formData.diskSize * 0.1;
+                        const dataCost = 80;
+                        const snapshotCost = formData.snapshots ? 25 : 0;
+                        
+                        return (instanceCost + storageCost + dataCost + snapshotCost).toFixed(2);
+                      })()}
                     </span>
                     <span className="text-gray-400 text-sm ml-1">/month</span>
                   </div>
@@ -549,7 +571,8 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
         {/* Deploy Button */}
         <div className="flex justify-center mt-10">
           <button
-            type="submit"
+            type="button" // Change from "submit" to "button"
+            onClick={handleSubmit} // Use the handler directly on click
             disabled={loading || deploymentSuccess}
             className={`
               px-10 py-4 rounded-xl font-medium text-lg
@@ -570,11 +593,11 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
                 Deployment Started
               </span>
             ) : (
-              'Deploy Solana Node'
+              "Deploy Solana Node"
             )}
           </button>
         </div>
-      </form>
+      </div>
     </div>
   );
 };
