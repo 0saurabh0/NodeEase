@@ -7,9 +7,10 @@ import (
 	"encoding/base64"
 	"errors"
 	"io"
+	"os"
 )
 
-var encryptionKey = []byte("your-32-byte-encryption-key-here")
+var encryptionKey = []byte(os.Getenv("encryption_key"))
 
 // Encrypt encrypts a string using AES-GCM
 func Encrypt(plaintext string) (string, error) {

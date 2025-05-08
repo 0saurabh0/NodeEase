@@ -21,18 +21,20 @@ func CreateOrUpdateUserFromGoogle(email, name, picture string) error {
 	// If user doesn't exist, create new user
 	if existingUser.ID == "" {
 		user := models.User{
-			ID:        uuid.New().String(),
-			Email:     email,
-			Name:      name,
-			CreatedAt: now,
+			ID:             uuid.New().String(),
+			Email:          email,
+			Name:           name,
+			ProfilePicture: picture,
+			CreatedAt:      now,
 		}
 
 		return repository.CreateOrUpdateUser(user)
 	}
 
-	// Update existing user's login time
+	// Update existing user
 	existingUser.LastLoginAt = &now
-	existingUser.Name = name // Update name in case it changed
+	existingUser.Name = name
+	existingUser.ProfilePicture = picture
 
 	return repository.CreateOrUpdateUser(existingUser)
 }

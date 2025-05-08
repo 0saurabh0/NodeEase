@@ -5,6 +5,7 @@ import IntegrateView from '../components/dashboard/integrate/Integrate';
 import NodeDeploymentView from '../components/dashboard/nodes/nodes';
 import SettingsView from '../components/dashboard/settings/settings';
 import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
 const DashboardLayout = () => {
   const [activeView, setActiveView] = useState('integrate');
@@ -17,25 +18,33 @@ const DashboardLayout = () => {
   const [profileImageLoading, setProfileImageLoading] = useState(true);
   const navigate = useNavigate();
 
+  // New function to fetch user profile
+  const fetchUserProfile = async () => {
+    try {
+      const response = await api.get('/api/user/profile');
+      if (response.data) {
+        setUserProfile({
+          name: response.data.name || '',
+          email: response.data.email || '',
+          picture: response.data.picture || ''
+        });
+        setProfileImageLoading(false);
+        setProfileImageError(false);
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      setProfileImageError(true);
+      setProfileImageLoading(false);
+    }
+  };
+
   useEffect(() => {
     // Check for JWT token first
     const token = localStorage.getItem('jwtToken');
     
     if (token) {
-      // Try to get profile from localStorage
-      const storedProfile = localStorage.getItem('userProfile');
-      
-      if (storedProfile) {
-        try {
-          const parsedProfile = JSON.parse(storedProfile);
-          setUserProfile(parsedProfile);
-          setProfileImageLoading(true); // Reset loading state when profile changes
-          setProfileImageError(false); // Reset error state
-        } catch (error) {
-          console.error('Error parsing stored profile:', error);
-          setProfileImageError(true);
-        }
-      }
+      // Fetch profile from server
+      fetchUserProfile();
     } else {
       // Redirect to login if no token is found
       navigate('/');

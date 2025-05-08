@@ -28,15 +28,16 @@ func CreateOrUpdateUser(user models.User) error {
 		_, err = db.DB.Exec(context.Background(), `
             UPDATE users SET 
                 name = $1,
-                last_login_at = $2
-            WHERE email = $3
-        `, user.Name, now, user.Email)
+                profile_picture = $2,
+                last_login_at = $3
+            WHERE email = $4
+        `, user.Name, user.ProfilePicture, now, user.Email)
 	} else {
 		// Create new user
 		_, err = db.DB.Exec(context.Background(), `
-            INSERT INTO users (id, email, name, created_at, last_login_at)
-            VALUES ($1, $2, $3, $4, $5)
-        `, user.ID, user.Email, user.Name, now, now)
+            INSERT INTO users (id, email, name, profile_picture, created_at, last_login_at)
+            VALUES ($1, $2, $3, $4, $5, $6)
+        `, user.ID, user.Email, user.Name, user.ProfilePicture, now, now)
 	}
 
 	return err
@@ -48,13 +49,14 @@ func GetUserByEmail(email string) (models.User, error) {
 	var lastLoginAt *time.Time
 
 	err := db.DB.QueryRow(context.Background(), `
-        SELECT id, email, name, created_at, last_login_at
+        SELECT id, email, name, profile_picture, created_at, last_login_at
         FROM users
         WHERE email = $1
     `, email).Scan(
 		&user.ID,
 		&user.Email,
 		&user.Name,
+		&user.ProfilePicture,
 		&user.CreatedAt,
 		&lastLoginAt,
 	)

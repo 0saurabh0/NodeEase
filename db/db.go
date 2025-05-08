@@ -44,6 +44,7 @@ func createTables() error {
             id TEXT PRIMARY KEY,
             email TEXT UNIQUE NOT NULL,
             name TEXT,
+			profile_picture TEXT,
             created_at TIMESTAMP NOT NULL,
             last_login_at TIMESTAMP
         )

@@ -22,14 +22,6 @@ export default function OnboardingModal({ onClose }: { onClose: () => void }) {
     try {
       const token = credentialResponse.credential;
 
-      const googlePayload = JSON.parse(atob(token.split('.')[1]));
-
-      localStorage.setItem("userProfile", JSON.stringify({
-        name: googlePayload.name,
-        email: googlePayload.email,
-        picture: googlePayload.picture
-      }));
-
       // Send token to backend
       const res = await api.post("/api/auth/google", {
         token,
