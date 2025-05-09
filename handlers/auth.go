@@ -3,8 +3,10 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/0saurabh0/NodeEase/services"
 	"github.com/0saurabh0/NodeEase/utils"
@@ -140,4 +142,46 @@ func GetUserProfileHandler(w http.ResponseWriter, r *http.Request) {
 		"email":   user.Email,
 		"picture": user.ProfilePicture,
 	})
+}
+
+// ProxyImageHandler fetches and proxies an external image
+func ProxyImageHandler(w http.ResponseWriter, r *http.Request) {
+	// Get the image URL from query parameter
+	imageURL := r.URL.Query().Get("url")
+	if imageURL == "" {
+		http.Error(w, "Missing image URL", http.StatusBadRequest)
+		return
+	}
+
+	// Create a new request to the target URL
+	req, err := http.NewRequest("GET", imageURL, nil)
+	if err != nil {
+		http.Error(w, "Failed to create request: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Forward the request using http client
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		http.Error(w, "Failed to fetch image: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Copy response headers
+	for k, v := range resp.Header {
+		for _, val := range v {
+			w.Header().Add(k, val)
+		}
+	}
+
+	// Set CORS headers
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	// Copy the status code
+	w.WriteHeader(resp.StatusCode)
+
+	// Copy the response body
+	io.Copy(w, resp.Body)
 }
