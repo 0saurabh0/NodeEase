@@ -7,7 +7,8 @@ const CLOUD_PROVIDERS = [
     name: 'AWS',
     description: 'Connect your AWS account to deploy and manage nodes using your own infrastructure.',
     status: 'available',
-    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg', 
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/93/Amazon_Web_Services_Logo.svg',
+    securityNote: 'For security best practices, avoid using root credentials. Always create dedicated IAM users with limited permissions for integration.'
   },
 ];
 
@@ -109,9 +110,17 @@ const IntegrateView = () => {
                 </span>
               </div>
               
-              <p className="text-gray-400 mb-8 min-h-[3rem] leading-relaxed">
+              <p className="text-gray-400 mb-4 min-h-[3rem] leading-relaxed">
                 {provider.description}
               </p>
+
+              {provider.securityNote && (
+                <div className="bg-amber-900/20 backdrop-blur-sm rounded-lg p-3 mb-8 border border-amber-700/30 flex items-start">
+                  <p className="text-amber-200 text-sm">
+                    {provider.securityNote}
+                  </p>
+                </div>
+              )}
               
               <button 
                 className={`

@@ -12,7 +12,7 @@ var DB *pgxpool.Pool
 
 // InitDB initializes the database connection and creates tables
 func InitDB() error {
-	connStr := os.Getenv("db_url")
+	connStr := os.Getenv("DB_URL")
 	config, err := pgxpool.ParseConfig(connStr)
 	if err != nil {
 		return fmt.Errorf("failed to parse connection string: %v", err)

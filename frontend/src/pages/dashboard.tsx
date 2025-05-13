@@ -1,9 +1,9 @@
-// src/pages/Dashboard.tsx
 import React, { useState, useEffect } from 'react';
-import { Terminal, Server, Settings, Activity, Database, PlugZap, Bell, LogOut, User } from 'lucide-react';
+import { Terminal, Server, Settings, Activity, PlugZap, Bell, LogOut, User, Code } from 'lucide-react';
 import IntegrateView from '../components/dashboard/integrate/Integrate';
 import NodeDeploymentView from '../components/dashboard/nodes/nodes';
 import SettingsView from '../components/dashboard/settings/settings';
+import RPCPlaygroundView from '../components/dashboard/rpc-testing/RPCTesting';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
@@ -18,35 +18,37 @@ const DashboardLayout = () => {
   const [profileImageLoading, setProfileImageLoading] = useState(true);
   const navigate = useNavigate();
 
-  // New function to fetch user profile
   const fetchUserProfile = async () => {
     try {
-      const response = await api.get('/api/user/profile');
+      setProfileImageLoading(true);
+      const response = await api.get('/api/user/profile');      
+      
       if (response.data) {
+        const originalPictureUrl = response.data.picture || '';
+        const profilePicture = originalPictureUrl
+          ? `/api/proxy/image?url=${encodeURIComponent(originalPictureUrl)}` 
+          : '';
+        
         setUserProfile({
           name: response.data.name || '',
           email: response.data.email || '',
-          picture: response.data.picture || ''
+          picture: profilePicture
         });
-        setProfileImageLoading(false);
+        
         setProfileImageError(false);
       }
-    } catch (error) {
-      console.error('Error fetching profile:', error);
+    } catch  {
       setProfileImageError(true);
       setProfileImageLoading(false);
     }
   };
 
   useEffect(() => {
-    // Check for JWT token first
     const token = localStorage.getItem('jwtToken');
     
     if (token) {
-      // Fetch profile from server
       fetchUserProfile();
     } else {
-      // Redirect to login if no token is found
       navigate('/');
     }
   }, [navigate]);
@@ -56,7 +58,6 @@ const DashboardLayout = () => {
     localStorage.removeItem('userProfile');
     setUserProfile({ name: '', email: '', picture: '' });
     setProfileImageError(false);
-    // Redirect to login page
     navigate('/');
   };
 
@@ -66,6 +67,8 @@ const DashboardLayout = () => {
         return <IntegrateView />;
       case 'nodes':
         return <NodeDeploymentView navigateToIntegrate={() => setActiveView('integrate')} />;
+      case 'RPC Playground':
+        return <RPCPlaygroundView />;
       case 'settings':
         return <SettingsView />;
       default:
@@ -136,7 +139,7 @@ const DashboardLayout = () => {
             { icon: Terminal, label: 'Overview', value: 'overview' },
             { icon: PlugZap, label: 'Integrate', value: 'integrate' },
             { icon: Server, label: 'Nodes', value: 'nodes' },
-            { icon: Database, label: 'Resources', value: 'resources' },
+            { icon: Code, label: 'RPC Testing', value: 'RPC Playground' },
             { icon: Activity, label: 'Monitoring', value: 'monitoring' },
             { icon: Settings, label: 'Settings', value: 'settings' },
           ].map((item) => (
@@ -170,15 +173,19 @@ const DashboardLayout = () => {
               {userProfile.picture && !profileImageError ? (
                 <>
                   {profileImageLoading && (
-                    <div className="h-10 w-10 rounded-full bg-[#111827] flex items-center justify-center">
+                    <div className="absolute inset-0 h-10 w-10 rounded-full bg-[#111827] flex items-center justify-center z-10">
                       <div className="h-5 w-5 border-2 border-t-blue-500 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
                     </div>
                   )}
                   <img 
                     src={userProfile.picture}
-                    alt="Profile" 
-                    className={`h-10 w-10 rounded-full object-cover cursor-pointer ring-2 ring-blue-500/50 ${profileImageLoading ? 'hidden' : 'block'}`}
-                    onLoad={() => setProfileImageLoading(false)}
+                    alt="Profile"
+                    className="h-10 w-10 rounded-full object-cover cursor-pointer ring-2 ring-blue-500/50"
+                    style={profileImageLoading ? { display: 'none' } : {}}
+                    onLoad={() => {
+                      setProfileImageLoading(false);
+                      setProfileImageError(false);
+                    }}
                     onError={() => {
                       setProfileImageLoading(false);
                       setProfileImageError(true);
@@ -190,6 +197,8 @@ const DashboardLayout = () => {
                   <User className="w-5 h-5 text-white" />
                 </div>
               )}
+              
+              {/* User dropdown menu */}
               <div className="absolute right-0 mt-2 w-48 bg-[#111827]/95 backdrop-blur-xl rounded-xl shadow-lg border border-[#1E2D4A] 
                   opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
                 <div className="p-3 border-b border-[#1E2D4A]">

@@ -21,19 +21,27 @@ func SaveNode(node models.Node) error {
 	}
 
 	if exists {
-		// Update existing node
+		// Update existing node with all possible fields
 		_, err = db.DB.Exec(context.Background(), `
-            UPDATE nodes SET 
-                name = $1,
-                status = $2,
-                status_detail = $3,
-                ip_address = $4,
+            UPDATE nodes 
+            SET name = $1,
+                provider = $2,
+                region = $3,
+                instance_type = $4,
                 instance_id = $5,
-                rpc_endpoint = $6,
-                updated_at = $7
-            WHERE id = $8
-        `, node.Name, node.Status, node.StatusDetail, node.IPAddress,
-			node.InstanceID, node.RpcEndpoint, node.UpdatedAt, node.ID)
+                node_type = $6,
+                network_type = $7,
+                status = $8,
+                status_detail = $9,
+                ip_address = $10,
+                disk_size = $11,
+                rpc_endpoint = $12,
+                updated_at = $13
+            WHERE id = $14
+        `, node.Name, node.Provider, node.Region, node.InstanceType,
+			node.InstanceID, node.NodeType, node.NetworkType, node.Status,
+			node.StatusDetail, node.IPAddress, node.DiskSize, node.RpcEndpoint,
+			node.UpdatedAt, node.ID)
 	} else {
 		// Create new node
 		_, err = db.DB.Exec(context.Background(), `
@@ -95,6 +103,34 @@ func GetNodeByID(nodeID, userID string) (models.Node, error) {
         FROM nodes
         WHERE id = $1 AND user_id = $2
     `, nodeID, userID).Scan(
+		&node.ID, &node.UserID, &node.Name, &node.Provider, &node.Region,
+		&node.InstanceType, &node.InstanceID, &node.NodeType, &node.NetworkType,
+		&node.Status, &node.StatusDetail, &node.IPAddress, &node.DiskSize,
+		&node.RpcEndpoint, &node.CreatedAt, &node.UpdatedAt,
+	)
+
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return models.Node{}, nil
+		}
+		return models.Node{}, err
+	}
+
+	return node, nil
+}
+
+// GetNodeByIDInternal retrieves a node by ID without user filtering
+// Internal use only - not to be called from API handlers
+func GetNodeByIDInternal(nodeID string) (models.Node, error) {
+	var node models.Node
+
+	err := db.DB.QueryRow(context.Background(), `
+        SELECT id, user_id, name, provider, region, instance_type, instance_id, 
+            node_type, network_type, status, status_detail, ip_address, 
+            disk_size, rpc_endpoint, created_at, updated_at
+        FROM nodes
+        WHERE id = $1
+    `, nodeID).Scan(
 		&node.ID, &node.UserID, &node.Name, &node.Provider, &node.Region,
 		&node.InstanceType, &node.InstanceID, &node.NodeType, &node.NetworkType,
 		&node.Status, &node.StatusDetail, &node.IPAddress, &node.DiskSize,
