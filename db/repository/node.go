@@ -36,23 +36,27 @@ func SaveNode(node models.Node) error {
                 ip_address = $10,
                 disk_size = $11,
                 rpc_endpoint = $12,
-                updated_at = $13
-            WHERE id = $14
+                ssh_private_key = $13,
+                deploy_token = $14,
+                updated_at = $15
+            WHERE id = $16
         `, node.Name, node.Provider, node.Region, node.InstanceType,
 			node.InstanceID, node.NodeType, node.NetworkType, node.Status,
 			node.StatusDetail, node.IPAddress, node.DiskSize, node.RpcEndpoint,
-			node.UpdatedAt, node.ID)
+			node.SshPrivateKey, node.DeployToken, node.UpdatedAt, node.ID)
 	} else {
 		// Create new node
 		_, err = db.DB.Exec(context.Background(), `
             INSERT INTO nodes (
                 id, user_id, name, provider, region, instance_type, 
                 instance_id, node_type, network_type, status, status_detail,
-                ip_address, disk_size, rpc_endpoint, created_at, updated_at
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+                ip_address, disk_size, rpc_endpoint, ssh_private_key,
+                deploy_token, created_at, updated_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
         `, node.ID, node.UserID, node.Name, node.Provider, node.Region, node.InstanceType,
 			node.InstanceID, node.NodeType, node.NetworkType, node.Status, node.StatusDetail,
-			node.IPAddress, node.DiskSize, node.RpcEndpoint, node.CreatedAt, node.UpdatedAt)
+			node.IPAddress, node.DiskSize, node.RpcEndpoint, node.SshPrivateKey,
+			node.DeployToken, node.CreatedAt, node.UpdatedAt)
 	}
 
 	return err
@@ -99,14 +103,14 @@ func GetNodeByID(nodeID, userID string) (models.Node, error) {
 	err := db.DB.QueryRow(context.Background(), `
         SELECT id, user_id, name, provider, region, instance_type, instance_id, 
             node_type, network_type, status, status_detail, ip_address, 
-            disk_size, rpc_endpoint, created_at, updated_at
+            disk_size, rpc_endpoint, ssh_private_key, deploy_token, created_at, updated_at
         FROM nodes
         WHERE id = $1 AND user_id = $2
     `, nodeID, userID).Scan(
 		&node.ID, &node.UserID, &node.Name, &node.Provider, &node.Region,
 		&node.InstanceType, &node.InstanceID, &node.NodeType, &node.NetworkType,
 		&node.Status, &node.StatusDetail, &node.IPAddress, &node.DiskSize,
-		&node.RpcEndpoint, &node.CreatedAt, &node.UpdatedAt,
+		&node.RpcEndpoint, &node.SshPrivateKey, &node.DeployToken, &node.CreatedAt, &node.UpdatedAt,
 	)
 
 	if err != nil {
@@ -127,14 +131,14 @@ func GetNodeByIDInternal(nodeID string) (models.Node, error) {
 	err := db.DB.QueryRow(context.Background(), `
         SELECT id, user_id, name, provider, region, instance_type, instance_id, 
             node_type, network_type, status, status_detail, ip_address, 
-            disk_size, rpc_endpoint, created_at, updated_at
+            disk_size, rpc_endpoint, ssh_private_key, deploy_token, created_at, updated_at
         FROM nodes
         WHERE id = $1
     `, nodeID).Scan(
 		&node.ID, &node.UserID, &node.Name, &node.Provider, &node.Region,
 		&node.InstanceType, &node.InstanceID, &node.NodeType, &node.NetworkType,
 		&node.Status, &node.StatusDetail, &node.IPAddress, &node.DiskSize,
-		&node.RpcEndpoint, &node.CreatedAt, &node.UpdatedAt,
+		&node.RpcEndpoint, &node.SshPrivateKey, &node.DeployToken, &node.CreatedAt, &node.UpdatedAt,
 	)
 
 	if err != nil {
@@ -154,4 +158,40 @@ func DeleteNode(nodeID, userID string) error {
         WHERE id = $1 AND user_id = $2
     `, nodeID, userID)
 	return err
+}
+
+// AddNodeDeploymentLog adds a log entry for a node
+func AddNodeDeploymentLog(nodeID string, log models.NodeDeploymentLog) error {
+	_, err := db.DB.Exec(context.Background(), `
+        INSERT INTO node_deployment_logs (node_id, timestamp, step, message, progress, created_at)
+        VALUES ($1, $2, $3, $4, $5, NOW())
+    `, nodeID, log.Timestamp, log.Step, log.Message, log.Progress)
+
+	return err
+}
+
+// GetDeploymentLogsForNode retrieves all deployment logs for a node
+func GetDeploymentLogsForNode(nodeID string) ([]models.NodeDeploymentLog, error) {
+	rows, err := db.DB.Query(context.Background(), `
+        SELECT timestamp, step, message, progress
+        FROM node_deployment_logs
+        WHERE node_id = $1
+        ORDER BY timestamp ASC
+    `, nodeID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var logs []models.NodeDeploymentLog
+	for rows.Next() {
+		var log models.NodeDeploymentLog
+		if err := rows.Scan(&log.Timestamp, &log.Step, &log.Message, &log.Progress); err != nil {
+			return nil, err
+		}
+		logs = append(logs, log)
+	}
+
+	return logs, nil
 }

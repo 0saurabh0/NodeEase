@@ -101,7 +101,7 @@ function App() {
               </div>
 
               <h1 className="text-6xl md:text-8xl font-bold text-white mb-8 leading-tight tracking-tight drop-shadow-lg">
-                Self-Host Solana Nodes with{' '}
+                Self-Host Solana RPCs with{' '}
                 <span className="text-[#14F195] drop-shadow-[0_4px_8px_rgba(20,241,149,0.3)]">Ease</span>
               </h1>
               <p className="text-xl text-white mb-12 font-medium leading-relaxed max-w-2xl mx-auto drop-shadow-lg">
@@ -171,19 +171,19 @@ function App() {
                       icon: Terminal, 
                       title: "Connect", 
                       desc: "Easily link your cloud — no API fuss.",
-                      gradient: "from-[#3B82F6] to-[#60A5FA]" // Blue gradient
+                      gradient: "from-[#3B82F6] to-[#60A5FA]"
                     },
                     { 
                       icon: Server, 
                       title: "Configure", 
                       desc: "Choose node specs and region, we handle the complexity.",
-                      gradient: "from-[#10B981] to-[#34D399]" // Green gradient
+                      gradient: "from-[#10B981] to-[#34D399]"
                     },
                     { 
                       icon: Globe, 
                       title: "Launch", 
                       desc: "Your node is live in minutes — you focus on your app.",
-                      gradient: "from-[#3B82F6] to-[#A78BFA]" // Orange to red gradient
+                      gradient: "from-[#3B82F6] to-[#A78BFA]"
                     }
                   ].map((item, i) => (
                     <div key={i} className="group flex-1 relative z-10">
@@ -208,7 +208,7 @@ function App() {
             <div className={`mt-32 relative transition-all duration-1000 delay-1000 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
               <div className="relative px-8 py-16">
                 <h2 className="text-4xl md:text-5xl font-bold text-white text-center mb-16 drop-shadow-lg">
-                  Why Choose <span className="bg-gradient-to-r from-[#3B82F6] to-[#60A5FA] text-transparent bg-clip-text">NodeEase</span>?
+                  Why Choose <span className="bg-gradient-to-r from-[#242254] to-[#090582] text-transparent bg-clip-text">NodeEase?</span>
                 </h2>
                 
                 <div className="bg-white/5 backdrop-blur-xl rounded-[2rem] p-8 text-white border border-white/10 transition-all duration-300 hover:bg-white/10">
@@ -217,7 +217,7 @@ function App() {
                     <div className="space-y-8">
                       {/* Open & Transparent */}
                       <div className="flex items-start gap-4 group">
-                        <div className={`bg-gradient-to-br from-[#3B82F6] to-[#A78BFA] rounded-xl w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500 flex-shrink-0`}>
+                        <div className={`rounded-xl w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500 flex-shrink-0`}>
                           {React.createElement(Code, { className: "h-5 w-5 text-white" })}
                         </div>
                         <div>
@@ -230,7 +230,7 @@ function App() {
 
                       {/* Full Control */}
                       <div className="flex items-start gap-4 group">
-                        <div className={`bg-gradient-to-br from-[#10B981] to-[#34D399] rounded-xl w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500 flex-shrink-0`}>
+                        <div className={`rounded-xl w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500 flex-shrink-0`}>
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a4 4 0 01-5.656 0 4 4 0 010-5.656l6.586-6.586" />
                           </svg>
@@ -245,7 +245,7 @@ function App() {
 
                       {/* Runs in Your Cloud */}
                       <div className="flex items-start gap-4 group">
-                        <div className={`bg-gradient-to-br from-[#8B5CF6] to-[#3B82F6] rounded-xl w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500 flex-shrink-0`}>
+                        <div className={`rounded-xl w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500 flex-shrink-0`}>
                           {React.createElement(Cloud, { className: "h-5 w-5 text-white" })}
                         </div>
                         <div>
@@ -258,7 +258,7 @@ function App() {
 
                       {/* No Lock In */}
                       <div className="flex items-start gap-4 group">
-                        <div className={`bg-gradient-to-br from-[#F59E0B] to-[#EF4444] rounded-xl w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500 flex-shrink-0`}>
+                        <div className={`rounded-xl w-10 h-10 flex items-center justify-center group-hover:scale-110 transition-transform duration-500 flex-shrink-0`}>
                           {React.createElement(Lock, { className: "h-5 w-5 text-white" })}
                         </div>
                         <div>

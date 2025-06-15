@@ -8,6 +8,9 @@ import IntegrateView from './components/dashboard/integrate/Integrate';
 import NodeDeploymentView from './components/dashboard/nodes/nodes';
 import RPCPlaygroundView from './components/dashboard/rpc-testing/RPCTesting';
 import SettingsView from './components/dashboard/settings/settings';
+import OverviewContent from './components/dashboard/overview';
+import NodeDeploymentProgress from './components/dashboard/nodes/nodeDeploymentProgress';
+import MonitoringView from './components/monitoring/monitoring';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -63,11 +66,12 @@ function AppRoutes() {
           </ProtectedRoute>
         }>
           <Route index element={<Navigate to="integrate" replace />} />
-          {/* <Route path="overview" element={<OverviewContent />} /> */}
+          <Route path="overview" element={<OverviewContent />} />
           <Route path="integrate" element={<IntegrateView />} />
           <Route path="nodes" element={<NodeDeploymentView />} />
+          <Route path="nodes/:nodeId/progress" element={<NodeDeploymentProgress standalone={true} />} />
           <Route path="rpc-playground" element={<RPCPlaygroundView />} />
-          <Route path="monitoring" element={<div>Monitoring (Coming Soon)</div>} />
+          <Route path="monitoring" element={<MonitoringView />} />
           <Route path="settings" element={<SettingsView />} />
         </Route>
       </Routes>

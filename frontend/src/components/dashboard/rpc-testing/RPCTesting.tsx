@@ -26,17 +26,26 @@ const RPCPlaygroundView = () => {
     const fetchNodes = async () => {
       try {
         const response = await api.get('/api/nodes');
-        setNodes(response.data);
-        if (response.data.length > 0) {
+        setNodes(response.data || []);
+        if (response.data && response.data.length > 0) {
           setSelectedNode(response.data[0].id);
         }
       } catch (err) {
         setError('Failed to fetch nodes');
+        // Ensure nodes is at least an empty array on error
+        setNodes([]);
       }
     };
 
     fetchNodes();
   }, []);
+
+  useEffect(() => {
+    // This ensures the button is always disabled when no node is selected
+    if (nodes.length === 0) {
+      setSelectedNode('');
+    }
+  }, [nodes]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

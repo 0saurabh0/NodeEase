@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import api from '../../../services/api';
 import { Server, Check, Info, ExternalLink } from 'lucide-react';
 import DeployedNodesList from './deployedNodesList';
+import Notification, { NotificationType } from '../../ui/Notification';
 
 // AWS Blog reference
 const AWS_BLOG_URL = 'https://aws.amazon.com/blogs/web3/run-solana-nodes-on-aws/';
@@ -12,14 +13,12 @@ const RECOMMENDED_CONFIGS = {
     instanceType: 'r7a.16xlarge',
     diskSize: 500,
     historyLength: 'minimal',
-    snapshots: true,
     networkType: 'mainnet',
   },
   'extended': {
     instanceType: 'r7a.24xlarge',
     diskSize: 2000,
     historyLength: 'full',
-    snapshots: true,
     networkType: 'mainnet',
   }
 };
@@ -50,28 +49,38 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
   const [loading, setLoading] = useState(false);
   const [deploymentSuccess, setDeploymentSuccess] = useState(false);
   const [estimatedCost, setEstimatedCost] = useState<number>(0);
+  const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
+  const [showProgressView, setShowProgressView] = useState(false);
+  const [notification, setNotification] = useState<{
+    show: boolean;
+    type: NotificationType;
+    title: string;
+    message?: string;
+  }>({ show: false, type: 'info', title: '' });
   const [deployedNodes, setDeployedNodes] = useState<Array<{
     id: string;
     name: string;
     type: string;
     status: string;
     statusDetail?: string;
+    latestProgress?: number;
+    latestStep?: string;
+    latestMessage?: string;
   }>>([]);
 
-  // Form state
+  // Form state - REMOVED snapshots
   const [formData, setFormData] = useState({
     rpcType: 'base',
     configMode: 'recommended',
     instanceType: 'r7a.16xlarge',
     diskSize: 500,
-    snapshots: true,
     historyLength: 'minimal', // minimal, recent, full
     networkType: 'mainnet', // mainnet, testnet, devnet
     region: '',
     nodeName: `solana-rpc-${Math.floor(Math.random() * 10000)}`
   });
 
-  const [showDeploymentForm, setShowDeploymentForm] = useState(true);
+  const [showDeploymentForm, setShowDeploymentForm] = useState(false);
 
   // Check AWS integration status on load
   useEffect(() => {
@@ -95,19 +104,18 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
     checkAWSStatus();
   }, []);
 
-  // Calculate estimated cost whenever relevant form values change
+  // Calculate estimated cost - REMOVED snapshots cost
   useEffect(() => {
     const calculateCost = () => {
       const instanceCost = INSTANCE_COSTS[formData.instanceType as keyof typeof INSTANCE_COSTS] || 0;
       const storageCost = formData.diskSize * 0.1;
       const dataCost = 80;
-      const snapshotCost = formData.snapshots ? 25 : 0;
       
-      return instanceCost + storageCost + dataCost + snapshotCost;
+      return instanceCost + storageCost + dataCost;
     };
     
     setEstimatedCost(calculateCost());
-  }, [formData.instanceType, formData.diskSize, formData.snapshots]);
+  }, [formData.instanceType, formData.diskSize]); // REMOVED snapshots dependency
 
   // Handle changes to RPC type
   const handleRPCTypeChange = (type: string) => {
@@ -159,12 +167,6 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
     setFormData(prev => ({ ...prev, [name]: updatedValue }));
   };
 
-  // Handle checkbox changes
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
-    setFormData(prev => ({ ...prev, [name]: checked }));
-  };
-
   // Form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -174,6 +176,11 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
     try {
       const response = await api.post('/api/nodes/deploy', formData);
       setDeploymentSuccess(true);
+      
+      // Set the active node ID to track its deployment
+      setActiveNodeId(response.data.nodeId);
+      localStorage.setItem('activeNodeId', response.data.nodeId); // Save to localStorage
+      setShowProgressView(true);
       setShowDeploymentForm(false);
 
       // Add the new node to the list
@@ -182,12 +189,32 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
         name: formData.nodeName,
         type: formData.rpcType === 'base' ? 'Base RPC' : 'Extended RPC',
         status: 'deploying',
+        latestProgress: 0,
+        latestStep: 'init',
+        latestMessage: 'Node deployment started'
       };
       
       setDeployedNodes(prev => [newNode, ...prev]);
+      
+      // Show deployment started notification
+      setNotification({
+        show: true,
+        type: 'info',
+        title: 'Deployment Started',
+        message: `Your ${formData.rpcType === 'base' ? 'Base' : 'Extended'} RPC node is now being deployed. This process may take 15-20 minutes to complete.`
+      });
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: string } }; message?: string };
-      console.error('Failed to deploy node:', error.response?.data?.error || error.message || 'Unknown error');
+      const errorMessage = error.response?.data?.error || error.message || 'Unknown error';
+      console.error('Failed to deploy node:', errorMessage);
+      
+      // Show error notification
+      setNotification({
+        show: true,
+        type: 'error',
+        title: 'Deployment Failed',
+        message: errorMessage
+      });
     } finally {
       setLoading(false);
     }
@@ -197,10 +224,13 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
   const handleDeployAnother = () => {
     setDeploymentSuccess(false);
     setShowDeploymentForm(true);
-    window.scrollTo({
-      top: document.getElementById('deployment-form')?.offsetTop || 0,
-      behavior: 'smooth'
-    });
+    // Scroll to form after a small delay to ensure it's rendered
+    setTimeout(() => {
+      window.scrollTo({
+        top: document.getElementById('deployment-form')?.offsetTop || 0,
+        behavior: 'smooth'
+      });
+    }, 100);
   };
 
   const handleViewNode = (nodeId: string) => {
@@ -208,30 +238,139 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
     window.location.href = `/dashboard/nodes/${nodeId}`;
   };
 
+  const handleDeleteNode = async (nodeId: string) => {
+    try {
+      // Remove the node from the local state
+      setDeployedNodes(prev => prev.filter(node => node.id !== nodeId));
+      
+      // Show success notification
+      setNotification({
+        show: true,
+        type: 'success',
+        title: 'Node Deleted',
+        message: 'The node has been successfully deleted and all resources terminated.'
+      });
+    } catch (error) {
+      console.error('Error handling node deletion:', error);
+    }
+  };
+
+  // Define interface for node data
+  interface NodeData {
+    id: string;
+    name: string;
+    nodeType: string;
+    status: string;
+    statusDetail?: string;
+    deploymentLogs?: Array<{
+      step: string; 
+      progress: number; 
+      message: string;
+      timestamp: string;
+    }>;
+  }
+  
+  interface FormattedNode {
+    id: string;
+    name: string;
+    type: string;
+    status: string;
+    statusDetail?: string;
+    latestProgress?: number;
+    latestStep?: string;
+    latestMessage?: string;
+  }
+
   // Fetch existing nodes when the component mounts
-  useEffect(() => {
-    const fetchNodes = async () => {
-      try {
-        const response = await api.get('/api/nodes');
-        if (response.data) {
-          const formattedNodes = response.data.map((node: { id: string; name: string; nodeType: string; status: string; statusDetail?: string }) => ({
+  const fetchNodes = useCallback(async () => {
+    if (!awsIntegrated) return;
+    
+    try {
+      const response = await api.get('/api/nodes');
+      if (response.data) {
+        const formattedNodes = response.data.map((node: NodeData): FormattedNode => {
+          // Get the latest log entry if available
+          const latestLog = node.deploymentLogs && node.deploymentLogs.length > 0 
+            ? node.deploymentLogs[node.deploymentLogs.length - 1] 
+            : null;
+          
+          return {
             id: node.id,
             name: node.name,
             type: node.nodeType === 'base' ? 'Base RPC' : 'Extended RPC',
             status: node.status,
             statusDetail: node.statusDetail || undefined,
-          }));
-          setDeployedNodes(formattedNodes);
+            latestProgress: latestLog?.progress || 0,
+            latestStep: latestLog?.step || '',
+            latestMessage: latestLog?.message || '',
+          };
+        });
+        
+        setDeployedNodes(formattedNodes);
+
+        // If we have an active node being deployed, check its status
+        if (activeNodeId) {
+          const activeNode = formattedNodes.find((node) => node.id === activeNodeId);
+          
+          // Handle deployment completion or failure
+          if (activeNode) {
+            if (activeNode.status === 'running') {
+              // Node is now running, we can hide the progress view after some time
+              setTimeout(() => setShowProgressView(false), 5000);
+            } else if (activeNode.status === 'failed') {
+              // Show failure notification
+              setNotification({
+                show: true,
+                type: 'error',
+                title: 'Deployment Failed',
+                message: activeNode.statusDetail || 'There was an error deploying your node.'
+              });
+            }
+          }
         }
-      } catch (error) {
-        console.error('Failed to fetch nodes:', error);
       }
-    };
+    } catch (error) {
+      console.error('Failed to fetch nodes:', error);
+    }
+  }, [activeNodeId, awsIntegrated]);
+  
+  useEffect(() => {
+    // Restore active node from localStorage if exists
+    const savedNodeId = localStorage.getItem('activeNodeId');
+    if (savedNodeId) {
+      setActiveNodeId(savedNodeId);
+      setShowProgressView(true);
+    }
     
     if (awsIntegrated) {
       fetchNodes();
+      // Set up polling for node status updates
+      const intervalId = setInterval(fetchNodes, 5000);
+      
+      // Cleanup on unmount
+      return () => clearInterval(intervalId);
     }
-  }, [awsIntegrated]);
+  }, [awsIntegrated, fetchNodes]);
+
+  // Add a useEffect to manage the form visibility based on deployed nodes
+  useEffect(() => {
+    // If no nodes are deployed, show the form by default
+    // If nodes are deployed, hide the form until "Deploy Another" is clicked
+    if (deployedNodes.length > 0) {
+      setShowDeploymentForm(false);
+    } else {
+      setShowDeploymentForm(true);
+    }
+  }, [deployedNodes.length]);
+
+  const handleNodeAction = (nodeId: string, status: string) => {
+    // Update the node status in the local state
+    setDeployedNodes(prev => 
+      prev.map(node => 
+        node.id === nodeId ? { ...node, status } : node
+      )
+    );
+  };
 
   // If AWS isn't integrated, show a message
   if (!awsIntegrated) {
@@ -284,9 +423,21 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
         deployedNodes={deployedNodes}
         onDeployAnother={handleDeployAnother}
         onViewNode={handleViewNode}
+        onDeleteNode={handleDeleteNode}
+        onNodeAction={handleNodeAction}
+      />
+      
+      {/* Notification component */}
+      <Notification
+        show={notification.show}
+        type={notification.type}
+        title={notification.title}
+        message={notification.message}
+        onClose={() => setNotification(prev => ({ ...prev, show: false }))}
+        duration={8000}
       />
 
-      {/* Deployment Form */}
+      {/* Only show the deployment form when showDeploymentForm is true */}
       {showDeploymentForm && (
         <form id="deployment-form" className="space-y-8" onSubmit={(e) => e.preventDefault()}>
           <div className="bg-[#111827]/50 backdrop-blur-xl rounded-2xl p-8 border border-[#1E2D4A]">
@@ -423,10 +574,7 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
                           <span className="text-gray-400">History:</span>
                           <span className="text-white ml-2">{formData.historyLength === 'minimal' ? 'Minimal (recent slots)' : formData.historyLength === 'recent' ? 'Recent (90 days)' : 'Full'}</span>
                         </div>
-                        <div>
-                          <span className="text-gray-400">Snapshots:</span>
-                          <span className="text-white ml-2">{formData.snapshots ? 'Enabled' : 'Disabled'}</span>
-                        </div>
+                        {/* REMOVED snapshots display */}
                         <div>
                           <span className="text-gray-400">Region:</span>
                           <span className="text-white ml-2">{awsRegion}</span>
@@ -517,21 +665,7 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
                         </select>
                       </div>
                       
-                      <div className="flex items-center">
-                        <label className="flex items-center gap-3 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            name="snapshots"
-                            checked={formData.snapshots}
-                            onChange={handleCheckboxChange}
-                            className="sr-only"
-                          />
-                          <div className={`w-5 h-5 rounded flex items-center justify-center ${formData.snapshots ? 'bg-blue-500' : 'bg-[#151C2C] border border-[#1E2D4A]'}`}>
-                            {formData.snapshots && <Check className="w-3 h-3 text-white" />}
-                          </div>
-                          <span className="text-white">Enable snapshots (recommended)</span>
-                        </label>
-                      </div>
+                      {/* REMOVED snapshots checkbox */}
                     </div>
                   )}
                 </div>
@@ -578,12 +712,7 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
                       <span className="text-white font-medium">~$80.00/month</span>
                     </div>
                     
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Snapshots:</span>
-                      <span className="text-white font-medium">
-                        ${formData.snapshots ? '25.00' : '0.00'}/month
-                      </span>
-                    </div>
+                    {/* REMOVED snapshots cost line */}
                     
                     <div className="col-span-1 md:col-span-2 pt-4 mt-2 border-t border-[#1E2D4A]">
                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
@@ -662,10 +791,7 @@ const NodeDeploymentView: React.FC<NodeDeploymentViewProps> = ({ navigateToInteg
                         : 'Full'}
                     </span>
                   </div>
-                  <div>
-                    <span className="font-semibold">Snapshots:</span>
-                    <span className="ml-2">{formData.snapshots ? 'Enabled' : 'Disabled'}</span>
-                  </div>
+                  {/* REMOVED snapshots from summary */}
                   <div>
                     <span className="font-semibold">Region:</span>
                     <span className="ml-2">{formData.region || 'N/A'}</span>

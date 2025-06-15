@@ -3,12 +3,27 @@ package db
 import (
 	"context"
 	"fmt"
+	"net"
 	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 var DB *pgxpool.Pool
+
+// Add a custom resolver
+func customResolver(ctx context.Context, host string) ([]string, error) {
+	ips, err := net.DefaultResolver.LookupIP(ctx, "ip4", host)
+	if err != nil {
+		return nil, err
+	}
+
+	addrs := make([]string, len(ips))
+	for i, ip := range ips {
+		addrs[i] = ip.String()
+	}
+	return addrs, nil
+}
 
 // InitDB initializes the database connection and creates tables
 func InitDB() error {
@@ -17,6 +32,8 @@ func InitDB() error {
 	if err != nil {
 		return fmt.Errorf("failed to parse connection string: %v", err)
 	}
+
+	config.ConnConfig.LookupFunc = customResolver
 
 	DB, err = pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {
@@ -86,12 +103,31 @@ func createTables() error {
             ip_address TEXT,
             disk_size INTEGER NOT NULL,
             rpc_endpoint TEXT,
+			ssh_private_key TEXT,
+        	deploy_token TEXT,
             created_at TIMESTAMP NOT NULL,
             updated_at TIMESTAMP NOT NULL
         )
     `)
 	if err != nil {
 		return fmt.Errorf("failed to create nodes table: %v", err)
+	}
+
+	// Create node_deployment_logs table
+	_, err = DB.Exec(context.Background(), `
+    CREATE TABLE IF NOT EXISTS node_deployment_logs (
+        id SERIAL PRIMARY KEY,
+        node_id TEXT NOT NULL REFERENCES nodes(id) ON DELETE CASCADE,
+        timestamp TIMESTAMP NOT NULL,
+        step TEXT NOT NULL,
+        message TEXT NOT NULL,
+        progress INTEGER NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        CONSTRAINT fk_node FOREIGN KEY (node_id) REFERENCES nodes(id)
+    )
+`)
+	if err != nil {
+		return fmt.Errorf("failed to create node_deployment_logs table: %v", err)
 	}
 
 	return nil
