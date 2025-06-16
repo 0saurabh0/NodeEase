@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Server, TerminalSquare, Terminal, RefreshCw, Copy, Eye, EyeOff, ArrowLeft, ExternalLink, CheckCircle, X, Download, BookOpen } from 'lucide-react';
+import { Server, TerminalSquare, Terminal, RefreshCw, Copy, ArrowLeft, ExternalLink, CheckCircle, X, Download, BookOpen } from 'lucide-react';
 import api from '../../../services/api';
 
 interface NodeDeploymentProgressProps {
@@ -109,12 +109,16 @@ const NodeDeploymentProgress: React.FC<NodeDeploymentProgressProps> = ({
               try {
                 const nodeResponse = await api.get(`/api/nodes/${nodeId}`);
                 setNodeDetails(nodeResponse.data);
+                
+                // Stop polling if we have all the information we need
+                return { stopPolling: true };
               } catch (err) {
                 console.error("Failed to fetch node details:", err);
               }
+            } else {
+              // For failed/stopped nodes, also stop polling
+              return { stopPolling: true };
             }
-            
-            return;
           }
         }
       } catch (err) {
@@ -123,22 +127,35 @@ const NodeDeploymentProgress: React.FC<NodeDeploymentProgressProps> = ({
       } finally {
         setRefreshing(false);
       }
+      
+      return { stopPolling: false };
     };
 
     // Initial load
-    pollStatus();
+    let intervalId: NodeJS.Timeout;
     
-    // Set up polling interval
-    const interval = setInterval(() => {
-      if (failureCount < MAX_FAILURES) {
-        pollStatus();
-      } else {
-        console.error("Too many failures, stopping polling");
-        clearInterval(interval);
+    // Start polling
+    pollStatus().then(({ stopPolling }) => {
+      if (!stopPolling) {
+        // Set up polling interval
+        intervalId = setInterval(() => {
+          if (failureCount < MAX_FAILURES) {
+            pollStatus().then(({ stopPolling }) => {
+              if (stopPolling && intervalId) {
+                clearInterval(intervalId);
+              }
+            });
+          } else {
+            console.error("Too many failures, stopping polling");
+            clearInterval(intervalId);
+          }
+        }, 5000);
       }
-    }, 5000);
+    });
     
-    return () => clearInterval(interval);
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
   }, [nodeId, failureCount, onDeploymentComplete]);
 
   useEffect(() => {
