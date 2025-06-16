@@ -61,7 +61,7 @@ function App() {
               </div>
               <div className="flex items-center gap-6">
                 <a 
-                  href="https://github.com/nodeease/nodeease"
+                  href="https://github.com/0saurabh0/nodeease"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-white/90 hover:text-white transition-colors"
