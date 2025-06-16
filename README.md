@@ -2,7 +2,7 @@
 
 **NodeEase** is an open-source platform that makes it effortless to deploy and manage your own **Solana RPC nodes** on AWS and Bare Metal(soon) — with full control, transparency, and zero vendor lock-in.
 
->  Build your own RPC — provision, monitor, and destroy Solana infrastructure from a beautiful web UI, backed by Go and Terraform.
+>  Build your own RPC — provision, monitor, and destroy Solana infrastructure from a web UI.
 
 
 ## Why NodeEase?
@@ -18,7 +18,6 @@ Instead of relying on costly managed RPC services (that lock you into their plat
 
 > Ideal for **developers**, **validators**, and **infra teams** who want transparency, cost-efficiency, and decentralization.
 
----
 
 ## 🧩 Features
 
@@ -28,8 +27,6 @@ Instead of relying on costly managed RPC services (that lock you into their plat
 - 🔁 **Destroy/re-deploy** with a single click
 - 🧪 **Devnet/Mainnet support**
 
----
 
 > 🧭 And yes, AWS support is just **the MVP** — support for **bare metal**, **Hetzner**, **OVH**, and other **cost-efficient providers** is planned.
 
----
