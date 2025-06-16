@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/0saurabh0/NodeEase/db"
 	"github.com/0saurabh0/NodeEase/routes"
@@ -25,17 +26,20 @@ func main() {
 
 	// Create a more permissive CORS middleware configuration
 	corsMiddleware := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000", "http://localhost:5173"},
+		AllowedOrigins:   []string{"http://localhost:3000", "http://localhost:5173", "https://nodeease.xyz", "https://*.nodeease.xyz"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		AllowCredentials: true,
-		Debug:            true, // Enable for debugging, remove in production
 	})
 
 	handler := corsMiddleware.Handler(router)
 
-	fmt.Println("Server running on port 8080...")
+	// Use PORT environment variable from Render
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // Default port if not specified
+	}
 
-	// Start the server and log any fatal errors that occur
-	log.Fatal(http.ListenAndServe(":8080", handler))
+	fmt.Printf("Server running on port %s...\n", port)
+	log.Fatal(http.ListenAndServe(":"+port, handler))
 }
