@@ -2,13 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Activity, 
-  BarChart, 
-  Clock, 
-  Server, 
-  AlarmClock, 
-  Cpu,
-  HardDrive,
-  Network,
+  BarChart,  
+  Server,  
   ArrowRight,
   AlertTriangle,
   Info,
@@ -22,13 +17,7 @@ interface NodeMetrics {
   id: string;
   name: string;
   status: string;
-  cpu: number;
-  memory: number;
-  disk: number;
-  transactions: number;
-  uptime: string;
   lastUpdated: string;
-  alerts: number;
 }
 
 const MonitoringView: React.FC = () => {
@@ -45,19 +34,13 @@ const MonitoringView: React.FC = () => {
       const response = await api.get('/api/nodes');
       
       if (response.data) {
-        // Transform node data into metrics format
-        // In a real application, you would have a dedicated endpoint for node metrics
+        // Transform node data without random metrics
         const nodesWithMetrics = response.data.map((node: any) => ({
           id: node.id,
           name: node.name,
           status: node.status,
-          cpu: Math.floor(Math.random() * 100), // Placeholder for real metrics
-          memory: Math.floor(Math.random() * 100), // Placeholder for real metrics
-          disk: Math.floor(Math.random() * 100), // Placeholder for real metrics
-          transactions: Math.floor(Math.random() * 1000) + 500, // Placeholder for real metrics
-          uptime: formatUptime(Math.floor(Math.random() * 864000)), // Placeholder for real metrics (max 10 days in seconds)
           lastUpdated: new Date().toISOString(),
-          alerts: node.status === 'running' ? Math.floor(Math.random() * 2) : 0 // Placeholder for real alerts
+          // No random metrics anymore
         }));
         
         setNodes(nodesWithMetrics);
@@ -222,11 +205,6 @@ const MonitoringView: React.FC = () => {
                             <span className={`text-sm ${statusColors.text}`}>
                               {node.status.charAt(0).toUpperCase() + node.status.slice(1)}
                             </span>
-                            {node.alerts > 0 && (
-                              <span className="ml-3 px-2 py-0.5 text-xs rounded-full bg-amber-500/20 text-amber-400">
-                                {node.alerts} {node.alerts === 1 ? 'Alert' : 'Alerts'}
-                              </span>
-                            )}
                           </div>
                         </div>
                       </div>
@@ -243,124 +221,27 @@ const MonitoringView: React.FC = () => {
                     {/* Expanded metrics - visible when active */}
                     {isActive && (
                       <div className="px-4 pb-4 pt-2 border-t border-[#1E2D4A]">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                          {/* CPU Usage */}
-                          <div className="bg-[#111827]/50 backdrop-blur-sm rounded-xl p-4 border border-[#1E2D4A]">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center">
-                                <Cpu className="w-4 h-4 text-blue-400 mr-2" />
-                                <span className="text-gray-300 text-sm">CPU Usage</span>
-                              </div>
-                              <span className={`text-sm font-medium ${getUsageColor(node.cpu)}`}>
-                                {node.cpu}%
-                              </span>
-                            </div>
-                            <div className="w-full h-2 bg-[#1E2D4A] rounded-full overflow-hidden">
-                              <div 
-                                className={`h-full rounded-full ${
-                                  node.cpu < 70 ? 'bg-green-500' : 
-                                  node.cpu < 90 ? 'bg-amber-500' : 'bg-red-500'
-                                }`}
-                                style={{ width: `${node.cpu}%` }}
-                              ></div>
-                            </div>
+                        <div className="bg-[#111827]/50 backdrop-blur-sm rounded-xl p-5 border border-[#1E2D4A] text-center">
+                          <div className="flex items-center justify-center mb-3">
+                            <BarChart className="w-5 h-5 text-blue-400 mr-2" />
+                            <h4 className="text-white font-medium">Detailed Metrics</h4>
                           </div>
-                          
-                          {/* Memory Usage */}
-                          <div className="bg-[#111827]/50 backdrop-blur-sm rounded-xl p-4 border border-[#1E2D4A]">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center">
-                                <HardDrive className="w-4 h-4 text-purple-400 mr-2" />
-                                <span className="text-gray-300 text-sm">Memory Usage</span>
-                              </div>
-                              <span className={`text-sm font-medium ${getUsageColor(node.memory)}`}>
-                                {node.memory}%
-                              </span>
-                            </div>
-                            <div className="w-full h-2 bg-[#1E2D4A] rounded-full overflow-hidden">
-                              <div 
-                                className={`h-full rounded-full ${
-                                  node.memory < 70 ? 'bg-green-500' : 
-                                  node.memory < 90 ? 'bg-amber-500' : 'bg-red-500'
-                                }`}
-                                style={{ width: `${node.memory}%` }}
-                              ></div>
-                            </div>
-                          </div>
-                          
-                          {/* Disk Usage */}
-                          <div className="bg-[#111827]/50 backdrop-blur-sm rounded-xl p-4 border border-[#1E2D4A]">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center">
-                                <HardDrive className="w-4 h-4 text-green-400 mr-2" />
-                                <span className="text-gray-300 text-sm">Disk Usage</span>
-                              </div>
-                              <span className={`text-sm font-medium ${getUsageColor(node.disk)}`}>
-                                {node.disk}%
-                              </span>
-                            </div>
-                            <div className="w-full h-2 bg-[#1E2D4A] rounded-full overflow-hidden">
-                              <div 
-                                className={`h-full rounded-full ${
-                                  node.disk < 70 ? 'bg-green-500' : 
-                                  node.disk < 90 ? 'bg-amber-500' : 'bg-red-500'
-                                }`}
-                                style={{ width: `${node.disk}%` }}
-                              ></div>
-                            </div>
-                          </div>
-                          
-                          {/* Network/TPS */}
-                          <div className="bg-[#111827]/50 backdrop-blur-sm rounded-xl p-4 border border-[#1E2D4A]">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center">
-                                <Network className="w-4 h-4 text-blue-400 mr-2" />
-                                <span className="text-gray-300 text-sm">Transactions/s</span>
-                              </div>
-                              <span className="text-sm font-medium text-blue-400">
-                                {node.transactions}
-                              </span>
-                            </div>
-                            <div className="w-full h-2 bg-[#1E2D4A] rounded-full overflow-hidden">
-                              <div 
-                                className="h-full rounded-full bg-blue-500"
-                                style={{ width: `${Math.min(node.transactions / 10, 100)}%` }}
-                              ></div>
-                            </div>
+                          <p className="text-gray-300 mb-3">
+                            Real-time metrics for CPU, memory, disk usage and network activity will be available soon.
+                          </p>
+                          <div className="inline-block px-3 py-1 bg-blue-500/20 text-blue-400 text-sm rounded-md border border-blue-500/30">
+                            Coming Soon
                           </div>
                         </div>
                         
-                        {/* Additional data */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                          {/* Uptime */}
-                          <div className="bg-[#111827]/50 backdrop-blur-sm rounded-xl p-4 border border-[#1E2D4A] flex items-center">
-                            <Clock className="w-4 h-4 text-blue-400 mr-3" />
-                            <div>
-                              <p className="text-gray-300 text-xs">Uptime</p>
-                              <p className="text-white font-medium">{node.uptime}</p>
-                            </div>
-                          </div>
-                          
-                          {/* Last Updated */}
-                          <div className="bg-[#111827]/50 backdrop-blur-sm rounded-xl p-4 border border-[#1E2D4A] flex items-center">
-                            <AlarmClock className="w-4 h-4 text-blue-400 mr-3" />
-                            <div>
-                              <p className="text-gray-300 text-xs">Last Updated</p>
-                              <p className="text-white font-medium">
-                                {new Date(node.lastUpdated).toLocaleTimeString()}
-                              </p>
-                            </div>
-                          </div>
-                          
-                          {/* View Details Button */}
-                          <div className="bg-[#111827]/50 backdrop-blur-sm rounded-xl p-4 border border-[#1E2D4A] flex items-center justify-center">
-                            <button
-                              onClick={() => navigate(`/dashboard/nodes/${node.id}/progress`)}
-                              className="px-4 py-2 bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 text-sm rounded-md inline-flex items-center"
-                            >
-                              View Details <ArrowRight className="w-3 h-3 ml-1" />
-                            </button>
-                          </div>
+                        {/* Additional data - Just keep the View Details button */}
+                        <div className="flex justify-end mt-4">
+                          <button
+                            onClick={() => navigate(`/dashboard/nodes/${node.id}/progress`)}
+                            className="px-4 py-2 bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 text-sm rounded-md inline-flex items-center"
+                          >
+                            View Node Details <ArrowRight className="w-3 h-3 ml-1" />
+                          </button>
                         </div>
                       </div>
                     )}
