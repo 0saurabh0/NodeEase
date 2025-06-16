@@ -26,7 +26,7 @@ func main() {
 
 	// Create a more permissive CORS middleware configuration
 	corsMiddleware := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000", "http://localhost:5173", "https://nodeease.xyz", "https://*.nodeease.xyz"},
+		AllowedOrigins:   []string{"http://localhost:3000", "http://localhost:5173", "https://nodeease.xyz", "http://nodeease.up.railway.app", "https://nodeease.up.railway.app"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		AllowCredentials: true,

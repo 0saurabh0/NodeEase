@@ -781,7 +781,7 @@ echo "RPC Endpoint: http://$PUBLIC_IP:8899"
 	script = strings.ReplaceAll(script, "NODE_ID_PLACEHOLDER", nodeID)
 	script = strings.ReplaceAll(script, "TOKEN_PLACEHOLDER", deployToken)
 	// Use your server's public IP address so the VM can reach it
-	script = strings.ReplaceAll(script, "API_BASE_URL_PLACEHOLDER", "https://nodeease.onrender.com//api")
+	script = strings.ReplaceAll(script, "API_BASE_URL_PLACEHOLDER", "http://nodeease.up.railway.app/api")
 
 	return script
 }
