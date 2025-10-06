@@ -30,10 +30,9 @@ Instead of relying on costly managed RPC services (that lock you into their plat
 
 ##  Demo
 
-<video src="frontend/public/demo.mp4" controls width="720">
-  Your browser does not support the video tag. Here is a
-  <a href="frontend/public/demo.mp4">link to the demo video</a>.
-</video>
+![Demo](frontend/public/demo.gif)
+
+If the image doesn't load, [view the demo GIF](frontend/public/demo.gif).
 
 
 ##  Prerequisites
