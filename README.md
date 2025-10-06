@@ -19,7 +19,7 @@ Instead of relying on costly managed RPC services (that lock you into their plat
 > Ideal for **developers**, **validators**, and **infra teams** who want transparency, cost-efficiency, and decentralization.
 
 
-## 🧩 Features
+##  Features
 
 - ✅ **One-click deployment** of Solana RPC nodes on your cloud
 - 🔍 **Transparent infrastructure**: You own every instance, disk, and key
@@ -28,5 +28,48 @@ Instead of relying on costly managed RPC services (that lock you into their plat
 - 🧪 **Devnet/Mainnet support**
 
 
-> 🧭 And yes, AWS support is just **the MVP** — support for **bare metal**, **Hetzner**, **OVH**, and other **cost-efficient providers** is planned.
+##  Demo
+
+<video src="frontend/public/demo.mp4" controls width="720">
+  Your browser does not support the video tag. Here is a
+  <a href="frontend/public/demo.mp4">link to the demo video</a>.
+</video>
+
+
+##  Prerequisites
+
+- **Go**: 1.22+
+- **Node.js**: 18+
+- **npm**: 9+
+- **PostgreSQL**: running locally or via a managed service
+
+##  Quick start (local)
+
+1. Backend
+   - Install Go deps: `go mod download`
+   - Start API: `go run main.go`
+2. Frontend
+   - `cd frontend`
+   - `npm install`
+   - `npm run dev`
+
+##  Environment
+
+- Backend `.env` (examples; adjust to your setup):
+  - `DATABASE_URL=postgres://user:password@localhost:5432/nodeease?sslmode=disable`
+  - `JWT_SECRET=change-me`
+  - `GOOGLE_CLIENT_ID=...`
+  - `GOOGLE_CLIENT_SECRET=...`
+  - `PORT=8080`
+
+- Frontend `.env` (create `frontend/.env` as needed):
+  - `VITE_API_BASE=http://localhost:8080`
+
+##  Run scripts
+
+- Backend: `go run main.go` (listens on `$PORT` or 8080)
+- Frontend: from `frontend/`
+  - `npm run dev` (Vite dev server)
+  - `npm run build` (production build)
+  - `npm run preview` (preview built app)
 
